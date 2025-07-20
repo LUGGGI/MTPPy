@@ -1,11 +1,11 @@
 import logging
 
-from mtppy.attribute import Attribute
-from mtppy.state_codes import StateCodes
-from mtppy.command_codes import CommandCodes
-from mtppy.command_en_control import CommandEnControl
-from mtppy.operation_source_mode import OperationSourceMode
-from mtppy.procedure_control import ProcedureControl
+from MTPPy_Async.src.mtppy.attribute import Attribute
+from MTPPy_Async.src.mtppy.state_codes import StateCodes
+from MTPPy_Async.src.mtppy.command_codes import CommandCodes
+from MTPPy_Async.src.mtppy.command_en_control import CommandEnControl
+from MTPPy_Async.src.mtppy.operation_source_mode import OperationSourceMode
+from MTPPy_Async.src.mtppy.procedure_control import ProcedureControl
 StateCodes = StateCodes()
 CommandCodes = CommandCodes()
 
@@ -57,7 +57,8 @@ class StateMachine:
 
         cmd_str = CommandCodes.int_code[com_var]
         if not self.command_en_ctrl.is_enabled(cmd_str):
-            logging.debug(f'CommandEn does not permit to execute {cmd_str} from state {self.get_current_state_str()}')
+            logging.debug(
+                f'CommandEn does not permit to execute {cmd_str} from state {self.get_current_state_str()}')
             return
         else:
             logging.debug(f'CommandEn permits to execute {cmd_str}')

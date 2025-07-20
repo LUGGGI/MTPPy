@@ -1,7 +1,7 @@
 from test_procedure_control import init_procedure_control
-from mtppy.state_machine import StateMachine
-from mtppy.state_codes import StateCodes
-from mtppy.command_codes import CommandCodes
+from MTPPy_Async.src.mtppy.state_machine import StateMachine
+from MTPPy_Async.src.mtppy.state_codes import StateCodes
+from MTPPy_Async.src.mtppy.command_codes import CommandCodes
 
 StateCodes = StateCodes()
 CommandCodes = CommandCodes()
@@ -175,7 +175,8 @@ def test_set_command():
     for op_mode, src_mode, set_command, change_allowed in test_scenario:
         for state in StateCodes.get_list_str():
             for command in CommandCodes.get_list_int():
-                state_machine, callback_object = init_state_machine(state=state, op_mode=op_mode, src_mode=src_mode)
+                state_machine, callback_object = init_state_machine(
+                    state=state, op_mode=op_mode, src_mode=src_mode)
                 eval(f'state_machine.{set_command}({command})')
                 command_str = CommandCodes.int_code[command]
                 # eval(f'state_machine.{command_str}()')
@@ -184,6 +185,8 @@ def test_set_command():
                 else:
                     expected_state = state
                 final_state = state_machine.get_current_state_str()
-                print(f'Scenario: mode {op_mode} {src_mode}, {set_command}, validity is {change_allowed},', end=' ')
-                print(f'transition {state}->({command_str})->{final_state} (expected {expected_state})')
+                print(
+                    f'Scenario: mode {op_mode} {src_mode}, {set_command}, validity is {change_allowed},', end=' ')
+                print(
+                    f'transition {state}->({command_str})->{final_state} (expected {expected_state})')
                 assert final_state == expected_state

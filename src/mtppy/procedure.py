@@ -1,6 +1,6 @@
 import logging
 
-from mtppy.suc_data_assembly import *
+from MTPPy_Async.src.mtppy.suc_data_assembly import *
 
 
 class Procedure(SUCServiceProcedure):

@@ -1,7 +1,7 @@
 import logging
 
-from mtppy.attribute import Attribute
-from mtppy.operation_source_mode import OperationSourceMode
+from MTPPy_Async.src.mtppy.attribute import Attribute
+from MTPPy_Async.src.mtppy.operation_source_mode import OperationSourceMode
 
 
 class ProcedureControl:

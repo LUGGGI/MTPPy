@@ -2,7 +2,7 @@
 test the basic manifest structure
 """
 import pytest
-from mtppy.mtp_generator import MTPGenerator
+from MTPPy_Async.src.mtppy.mtp_generator import MTPGenerator
 
 # basic infos needed to initiate mtp_generator
 writer_info_dict = {'WriterName': 'tud/plt/shk', 'WriterID': 'tud/plt', 'WriterVendor': 'tud',
@@ -18,7 +18,8 @@ class TestMTPStructure(object):  # test structure of manifest
         """
         initiate mtp generator and ModuleTypePackage
         """
-        self.mtp_generator = MTPGenerator(writer_info_dict, export_manifest_path, manifest_template_path)
+        self.mtp_generator = MTPGenerator(
+            writer_info_dict, export_manifest_path, manifest_template_path)
         self.mtp_generator.add_module_type_package('1.0', 'mtp_test', '')
         self.module_type_package = self.mtp_generator.module_type_package
 
@@ -71,7 +72,8 @@ class TestMTPStructure(object):  # test structure of manifest
 
         # a KeyError should be raised
         with pytest.raises(KeyError):
-            mtp_generator = MTPGenerator(writer_info_dict1, export_manifest_path, manifest_template_path)
+            mtp_generator = MTPGenerator(
+                writer_info_dict1, export_manifest_path, manifest_template_path)
             mtp_generator.edit_writer_information()
 
     def test_add_supported_role_class(self):
@@ -79,7 +81,8 @@ class TestMTPStructure(object):  # test structure of manifest
         self.mtp_generator.apply_add_supported_role_class()
         for internal_element in self.mtp_generator.root.iter('InternalElement'):
             supported_role_class = internal_element.find('SupportedRoleClass')
-            assert supported_role_class.get('RefRoleClassPath') == 'AutomationMLBaseRoleClassLib/AutomationMLBaseRole'
+            assert supported_role_class.get(
+                'RefRoleClassPath') == 'AutomationMLBaseRoleClassLib/AutomationMLBaseRole'
 
     def test_random_id_generator(self):
         random_id = self.mtp_generator.random_id_generator()

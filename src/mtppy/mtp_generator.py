@@ -1,4 +1,4 @@
-from mtppy.suc_data_assembly import *
+from MTPPy_Async.src.mtppy.suc_data_assembly import *
 import xml.etree.ElementTree as ET
 import random
 import string
@@ -182,7 +182,8 @@ class MTPGenerator:
 
         elif section == 'configuration_parameters':
             s_component = ET.SubElement(self.service, 'InternalElement')
-            s_component.set('RefBaseSystemUnitPath', 'MTPServiceSUCLib/ServiceParameter/ConfigurationParameter')
+            s_component.set('RefBaseSystemUnitPath',
+                            'MTPServiceSUCLib/ServiceParameter/ConfigurationParameter')
 
         elif section == 'procedures':
             s_component = ET.SubElement(self.service, 'InternalElement')
@@ -208,19 +209,23 @@ class MTPGenerator:
 
         elif section == 'procedure_parameters':
             s_component = ET.SubElement(self.service_procedure, 'InternalElement')
-            s_component.set('RefBaseSystemUnitPath', 'MTPServiceSUCLib/ServiceParameter/ProcedureParameter')
+            s_component.set('RefBaseSystemUnitPath',
+                            'MTPServiceSUCLib/ServiceParameter/ProcedureParameter')
 
         elif section == 'process_value_ins':
             s_component = ET.SubElement(self.service_procedure, 'InternalElement')
-            s_component.set('RefBaseSystemUnitPath', 'MTPServiceSUCLib/ServiceParameter/ProcessValueIn')
+            s_component.set('RefBaseSystemUnitPath',
+                            'MTPServiceSUCLib/ServiceParameter/ProcessValueIn')
 
         elif section == 'report_values':
             s_component = ET.SubElement(self.service_procedure, 'InternalElement')
-            s_component.set('RefBaseSystemUnitPath', 'MTPServiceSUCLib/ServiceParameter/ReportValue')
+            s_component.set('RefBaseSystemUnitPath',
+                            'MTPServiceSUCLib/ServiceParameter/ReportValue')
 
         elif section == 'process_value_outs':
             s_component = ET.SubElement(self.service_procedure, 'InternalElement')
-            s_component.set('RefBaseSystemUnitPath', 'MTPServiceSUCLib/ServiceParameter/ProcessValueOut')
+            s_component.set('RefBaseSystemUnitPath',
+                            'MTPServiceSUCLib/ServiceParameter/ProcessValueOut')
 
         else:
             raise TypeError('service components type error')
@@ -318,7 +323,8 @@ class MTPGenerator:
         node_name = opc_node_id.split('=')[-1]
 
         elem = ET.SubElement(self.opcua_server, 'ExternalInterface')
-        self.generate_attributes(elem, node_name, linked_attr_id, 'MTPCommunicationICLib/DataItem/OPCUAItem')
+        self.generate_attributes(elem, node_name, linked_attr_id,
+                                 'MTPCommunicationICLib/DataItem/OPCUAItem')
 
         # opc ua node attribute: identifier
         attr_identifier = ET.SubElement(elem, 'Attribute')
@@ -361,7 +367,8 @@ class MTPGenerator:
         """
         for internal_element in parent.findall('InternalElement'):
             SupportedRoleClass = ET.SubElement(internal_element, 'SupportedRoleClass')
-            SupportedRoleClass.set('RefRoleClassPath', 'AutomationMLBaseRoleClassLib/AutomationMLBaseRole')
+            SupportedRoleClass.set(
+                'RefRoleClassPath', 'AutomationMLBaseRoleClassLib/AutomationMLBaseRole')
 
             if internal_element.findall('InternalElement'):
                 self.add_supported_role_class(internal_element)

@@ -1,5 +1,5 @@
 import pytest
-from mtppy.active_elements import MonAnaVlv
+from MTPPy_Async.src.mtppy.active_elements import MonAnaVlv
 import time
 
 
@@ -67,7 +67,8 @@ def test_static_error():
             assert mon_ana_vlv.attributes['MonStatErr'].value == True
             assert mon_ana_vlv.attributes['MonDynErr'].value == False
             assert mon_ana_vlv.attributes['SafePosAct'].value == True
-            assert mon_ana_vlv.attributes['OpenFbk'].value == True  # safe position of valve is open
+            # safe position of valve is open
+            assert mon_ana_vlv.attributes['OpenFbk'].value == True
 
             time.sleep(0.5)
 
@@ -78,7 +79,8 @@ def test_static_error():
             assert mon_ana_vlv.attributes['MonStatErr'].value == True
             assert mon_ana_vlv.attributes['MonDynErr'].value == False
             assert mon_ana_vlv.attributes['SafePosAct'].value == True
-            assert mon_ana_vlv.attributes['OpenFbk'].value == True  # safe position of valve is open
+            # safe position of valve is open
+            assert mon_ana_vlv.attributes['OpenFbk'].value == True
 
             mon_ana_vlv.set_stop_monitor()
             mon_ana_vlv.monitor_static_thread.join()
@@ -167,7 +169,8 @@ def test_pos_open():
                 mon_ana_vlv.set_open_aut(True)
             eval(f'mon_ana_vlv.{set_command}({command})')
             print(f'Scenario: mode {op_mode} {src_mode}, {set_command}, {command}')
-            mon_ana_vlv.attributes['PosFbk'].set_value(7.5)  # position tolerance is 1, pos_fbk is 2.5 --> pos error
+            # position tolerance is 1, pos_fbk is 2.5 --> pos error
+            mon_ana_vlv.attributes['PosFbk'].set_value(7.5)
             time.sleep(1.5)  # time for monitoring pos error is 1s
             if 2 <= command < 6 or 8 < command <= 10:  # out of the pos tolerance range
                 assert mon_ana_vlv.attributes['PosReachedFbk'].value == False

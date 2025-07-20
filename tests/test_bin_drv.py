@@ -1,5 +1,5 @@
 import pytest
-from mtppy.active_elements import BinDrv
+from MTPPy_Async.src.mtppy.active_elements import BinDrv
 
 
 def init_bin_drv(op_mode='off', src_mode='int', rev_fbk_calc=True, fwd_fbk_calc=True,
@@ -59,7 +59,8 @@ def test_fwd_rev():
         for command in [True, False]:
             bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode, fwd_en=True, rev_en=True)
             eval(f'bin_drv.{set_command}({command})')
-            print(f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: {expected_result}')
+            print(
+                f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: {expected_result}')
             if set_command in ['set_fwd_op', 'set_fwd_aut']:
                 if command:
                     assert bin_drv.attributes['FwdCtrl'].value == expected_result
@@ -110,7 +111,8 @@ def test_fwd_rev_trip():
 def test_fwd_rev_permit_en_true():
     for op_mode, src_mode, set_command, _ in test_scenario:
         for command in [True, False]:
-            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode, fwd_en=True, rev_en=True, perm_en=True)
+            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode,
+                                   fwd_en=True, rev_en=True, perm_en=True)
             bin_drv.set_permit(False)
             eval(f'bin_drv.{set_command}({command})')
             print(f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: False')
@@ -123,10 +125,12 @@ def test_fwd_rev_permit_en_true():
 
     for op_mode, src_mode, set_command, expected_result in test_scenario:
         for command in [True, False]:
-            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode, fwd_en=True, rev_en=True, perm_en=True)
+            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode,
+                                   fwd_en=True, rev_en=True, perm_en=True)
             bin_drv.set_permit(True)
             eval(f'bin_drv.{set_command}({command})')
-            print(f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: {expected_result}')
+            print(
+                f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: {expected_result}')
 
             assert bin_drv.attributes['Permit'].value == True
             assert bin_drv.attributes['SafePosAct'].value == False
@@ -157,10 +161,12 @@ def test_fwd_rev_permit_en_true():
 def test_fwd_rev_permit_en_false():
     for op_mode, src_mode, set_command, expected_result in test_scenario:
         for command in [True, False]:
-            ana_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode, fwd_en=True, rev_en=True, perm_en=False)
+            ana_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode,
+                                   fwd_en=True, rev_en=True, perm_en=False)
             ana_drv.set_permit(True)
             eval(f'ana_drv.{set_command}({command})')
-            print(f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: {expected_result}')
+            print(
+                f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: {expected_result}')
 
             assert ana_drv.attributes['Permit'].value == True
             assert ana_drv.attributes['SafePosAct'].value == False
@@ -183,7 +189,8 @@ def test_fwd_rev_permit_en_false():
 def test_fwd_rev_interlock_en_true():
     for op_mode, src_mode, set_command, _ in test_scenario:
         for command in [True, False]:
-            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode, fwd_en=True, rev_en=True, intl_en=True)
+            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode,
+                                   fwd_en=True, rev_en=True, intl_en=True)
             bin_drv.set_interlock(False)
             eval(f'bin_drv.{set_command}({command})')
             print(f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: False')
@@ -195,10 +202,12 @@ def test_fwd_rev_interlock_en_true():
 
     for op_mode, src_mode, set_command, expected_result in test_scenario:
         for command in [True, False]:
-            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode, fwd_en=True, rev_en=True, intl_en=True)
+            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode,
+                                   fwd_en=True, rev_en=True, intl_en=True)
             bin_drv.set_interlock(True)
             eval(f'bin_drv.{set_command}({command})')
-            print(f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: {expected_result}')
+            print(
+                f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: {expected_result}')
 
             assert bin_drv.attributes['Interlock'].value == True
             assert bin_drv.attributes['SafePosAct'].value == False
@@ -221,10 +230,12 @@ def test_fwd_rev_interlock_en_true():
 def test_fwd_rev_interlock_en_false():
     for op_mode, src_mode, set_command, expected_result in test_scenario:
         for command in [True, False]:
-            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode, fwd_en=True, rev_en=True, intl_en=False)
+            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode,
+                                   fwd_en=True, rev_en=True, intl_en=False)
             bin_drv.set_interlock(True)
             eval(f'bin_drv.{set_command}({command})')
-            print(f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: {expected_result}')
+            print(
+                f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: {expected_result}')
 
             assert bin_drv.attributes['Interlock'].value == True
             assert bin_drv.attributes['SafePosAct'].value == False
@@ -247,7 +258,8 @@ def test_fwd_rev_interlock_en_false():
 def test_fwd_rev_protect_en_true():
     for op_mode, src_mode, set_command, _ in test_scenario:
         for command in [True, False]:
-            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode, fwd_en=True, rev_en=True, prot_en=True)
+            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode,
+                                   fwd_en=True, rev_en=True, prot_en=True)
             bin_drv.set_protect(False)
             eval(f'bin_drv.{set_command}({command})')
             print(f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: False')
@@ -259,10 +271,12 @@ def test_fwd_rev_protect_en_true():
 
     for op_mode, src_mode, set_command, expected_result in test_scenario:
         for command in [True, False]:
-            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode, fwd_en=True, rev_en=True, prot_en=True)
+            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode,
+                                   fwd_en=True, rev_en=True, prot_en=True)
             bin_drv.set_protect(True)
             eval(f'bin_drv.{set_command}({command})')
-            print(f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: {expected_result}')
+            print(
+                f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: {expected_result}')
 
             assert bin_drv.attributes['Protect'].value == True
             assert bin_drv.attributes['SafePosAct'].value == False
@@ -285,10 +299,12 @@ def test_fwd_rev_protect_en_true():
 def test_fwd_rev_protect_en_false():
     for op_mode, src_mode, set_command, expected_result in test_scenario:
         for command in [True, False]:
-            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode, fwd_en=True, rev_en=True, prot_en=False)
+            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode,
+                                   fwd_en=True, rev_en=True, prot_en=False)
             bin_drv.set_protect(True)
             eval(f'bin_drv.{set_command}({command})')
-            print(f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: {expected_result}')
+            print(
+                f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: {expected_result}')
 
             assert bin_drv.attributes['Protect'].value == True
             assert bin_drv.attributes['SafePosAct'].value == False
@@ -326,7 +342,8 @@ test_scenario_reset = [('off', 'int', 'set_reset_op', False),
 def test_reset():
     for op_mode, src_mode, set_command, result in test_scenario_reset:
         for command in [True, False]:
-            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode, fwd_en=True, rev_en=True, prot_en=True)
+            bin_drv = init_bin_drv(op_mode=op_mode, src_mode=src_mode,
+                                   fwd_en=True, rev_en=True, prot_en=True)
 
             bin_drv.set_protect(False)
             assert bin_drv.attributes['Protect'].value == False
@@ -363,7 +380,8 @@ def test_stop():
             elif op_mode == 'aut':
                 bin_drv.set_fwd_aut(True)
 
-            print(f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: {changes_expected}')
+            print(
+                f'Scenario: mode {op_mode} {src_mode}, {set_command}, expected: {changes_expected}')
             if changes_expected:
                 assert bin_drv.attributes['FwdCtrl'].value == True
                 eval(f'bin_drv.{set_command}({command})')

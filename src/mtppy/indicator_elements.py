@@ -1,7 +1,7 @@
 import logging
 
-from mtppy.attribute import Attribute
-from mtppy.suc_data_assembly import SUCIndicatorElement
+from MTPPy_Async.src.mtppy.attribute import Attribute
+from MTPPy_Async.src.mtppy.suc_data_assembly import SUCIndicatorElement
 
 
 class AnaView(SUCIndicatorElement):
