@@ -112,7 +112,7 @@ class StateMachine:
             self._change_state_to(StateCodes.execute)
         elif self.act_state == StateCodes.starting:
             self._change_state_to(StateCodes.execute)
-        elif selt.act_state == StateCodes.execute:
+        elif self.act_state == StateCodes.execute:
             self._change_state_to(StateCodes.completing)
         elif self.act_state == StateCodes.completing:
             self._change_state_to(StateCodes.completed)
