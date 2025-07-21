@@ -9,6 +9,8 @@ from MTPPy_Async.src.mtppy.procedure_control import ProcedureControl
 StateCodes = StateCodes()
 CommandCodes = CommandCodes()
 
+_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+
 
 class StateMachine:
     def __init__(self, operation_source_mode: OperationSourceMode,
@@ -52,16 +54,16 @@ class StateMachine:
 
     def command_execution(self, com_var: int):
         if com_var not in CommandCodes.get_list_int():
-            logging.debug(f'Command Code {com_var} does not exist')
+            _logger.debug(f'Command Code {com_var} does not exist')
             return
 
         cmd_str = CommandCodes.int_code[com_var]
         if not self.command_en_ctrl.is_enabled(cmd_str):
-            logging.debug(
+            _logger.debug(
                 f'CommandEn does not permit to execute {cmd_str} from state {self.get_current_state_str()}')
             return
         else:
-            logging.debug(f'CommandEn permits to execute {cmd_str}')
+            _logger.debug(f'CommandEn permits to execute {cmd_str}')
 
         eval(f'self.{CommandCodes.int_code[com_var]}()')
 
@@ -138,7 +140,7 @@ class StateMachine:
         self.command_en_ctrl.execute(new_state_str)
         self.attributes['CommandEn'].set_value(self.command_en_ctrl.get_command_en())
         self.execution_routine()
-        logging.debug(f'Service state changed to {new_state}')
+        _logger.debug(f'Service state changed to {new_state}')
 
     def get_current_state_str(self):
         return StateCodes.int_code[self.act_state]

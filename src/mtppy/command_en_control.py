@@ -1,5 +1,7 @@
 import logging
 
+_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+
 
 class CommandEnControl:
     def __init__(self):
@@ -101,7 +103,7 @@ class CommandEnControl:
         :param state: Given state.
         :return:
         """
-        logging.debug(f'CommandEn changed to correspond {state}')
+        _logger.debug(f'CommandEn changed to correspond {state}')
         exec(f'self._execute_{state}()')
 
     def _execute_undefined(self):

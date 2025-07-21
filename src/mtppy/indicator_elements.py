@@ -3,6 +3,8 @@ import logging
 from MTPPy_Async.src.mtppy.attribute import Attribute
 from MTPPy_Async.src.mtppy.suc_data_assembly import SUCIndicatorElement
 
+_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+
 
 class AnaView(SUCIndicatorElement):
     def __init__(self, tag_name: str, tag_description: str = '', v_scl_min: float = 0, v_scl_max: float = 100,
@@ -23,7 +25,7 @@ class AnaView(SUCIndicatorElement):
 
     def set_v(self, value):
         self.attributes['V'].set_value(value)
-        logging.debug('V set to %s' % value)
+        _logger.debug('V set to %s' % value)
 
 
 class BinView(SUCIndicatorElement):
@@ -42,7 +44,7 @@ class BinView(SUCIndicatorElement):
 
     def set_v(self, value):
         self.attributes['V'].set_value(value)
-        logging.debug('V set to %s' % value)
+        _logger.debug('V set to %s' % value)
 
 
 class DIntView(SUCIndicatorElement):
@@ -64,7 +66,7 @@ class DIntView(SUCIndicatorElement):
 
     def set_v(self, value):
         self.attributes['V'].set_value(value)
-        logging.debug('V set to %s' % value)
+        _logger.debug('V set to %s' % value)
 
 
 class StringView(SUCIndicatorElement):
@@ -78,4 +80,4 @@ class StringView(SUCIndicatorElement):
 
     def set_v(self, value):
         self.attributes['V'].set_value(value)
-        logging.debug('V set to %s' % value)
+        _logger.debug('V set to %s' % value)

@@ -5,6 +5,8 @@ import asyncio
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+
 
 class ThreadControl:
     def __init__(self, scheduler: callable = None):
@@ -22,12 +24,12 @@ class ThreadControl:
         self.callback_function = None
 
     def request_state(self, state: str, cb_function: callable):
-        logging.debug(f'State {state} requested')
+        _logger.debug(f'State {state} requested')
         self.requested_state = state
         self.callback_function = cb_function
 
     def reallocate_running_thread(self):
-        logging.debug(f'Reallocate thread to state {self.requested_state}')
+        _logger.debug(f'Reallocate thread to state {self.requested_state}')
         if self.requested_state is not self.running_state:
             self.job_event.set()
 
@@ -55,4 +57,4 @@ class ThreadControl:
         except Exception as e:
             self.exception = e
             self.exception_event.set()
-            logging.warning(f"Task {tasks[1].get_name()} raised an exception: {e}")
+            _logger.warning(f"Task {tasks[1].get_name()} raised an exception: {e}")

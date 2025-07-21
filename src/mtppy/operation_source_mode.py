@@ -2,6 +2,8 @@ import logging
 
 from MTPPy_Async.src.mtppy.attribute import Attribute
 
+_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+
 
 class OperationSourceMode:
     def __init__(self):
@@ -62,32 +64,32 @@ class OperationSourceMode:
 
     def _enter_off(self):
         if len(self.enter_offline_callbacks):
-            logging.debug('Applying enter offline mode callbacks')
+            _logger.debug('Applying enter offline mode callbacks')
             [cb() for cb in self.enter_offline_callbacks]
 
     def _exit_off(self):
         if len(self.exit_offline_callbacks):
-            logging.debug('Applying exit offline mode callbacks')
+            _logger.debug('Applying exit offline mode callbacks')
             [cb() for cb in self.exit_offline_callbacks]
 
     def _enter_op(self):
         if len(self.enter_operator_callbacks):
-            logging.debug('Applying enter operator mode callbacks')
+            _logger.debug('Applying enter operator mode callbacks')
             [cb() for cb in self.enter_operator_callbacks]
 
     def _exit_op(self):
         if len(self.exit_operator_callbacks):
-            logging.debug('Applying exit operator mode callbacks')
+            _logger.debug('Applying exit operator mode callbacks')
             [cb() for cb in self.exit_operator_callbacks]
 
     def _enter_aut(self):
         if len(self.enter_automatic_callbacks):
-            logging.debug('Applying enter automatic mode callbacks')
+            _logger.debug('Applying enter automatic mode callbacks')
             [cb() for cb in self.enter_automatic_callbacks]
 
     def _exit_aut(self):
         if len(self.exit_automatic_callbacks):
-            logging.debug('Applying exit automatic mode callbacks')
+            _logger.debug('Applying exit automatic mode callbacks')
             [cb() for cb in self.exit_automatic_callbacks]
 
     def _opmode_to_off(self):
@@ -105,7 +107,7 @@ class OperationSourceMode:
             self._exit_aut()
         self._enter_off()
 
-        logging.debug('Operation mode is now off')
+        _logger.debug('Operation mode is now off')
         self._src_to_off()
 
     def _opmode_to_aut(self):
@@ -123,7 +125,7 @@ class OperationSourceMode:
             self._exit_op()
         self._enter_aut()
 
-        logging.debug('Operation mode is now aut')
+        _logger.debug('Operation mode is now aut')
         self._src_to_int()
 
     def _opmode_to_op(self):
@@ -140,46 +142,46 @@ class OperationSourceMode:
             self._exit_aut()
         self._enter_op()
 
-        logging.debug('Operation mode is now op')
+        _logger.debug('Operation mode is now op')
         self._src_to_off()
 
     def set_state_channel(self, value: bool):
-        logging.debug('Operation mode channel is now %s' % value)
+        _logger.debug('Operation mode channel is now %s' % value)
 
     def set_state_aut_aut(self, value: bool):
-        logging.debug(f'StateAutAut set to {value}')
+        _logger.debug(f'StateAutAut set to {value}')
         if self.attributes['StateChannel'].value and value:
             if self.attributes['StateOffAct'] or self.attributes['StateOpAct']:
                 self._opmode_to_aut()
 
     def set_state_aut_op(self, value: bool):
-        logging.debug(f'StateAutOp set to {value}')
+        _logger.debug(f'StateAutOp set to {value}')
         if not self.attributes['StateChannel'].value and value:
             if self.attributes['StateOffAct'] or self.attributes['StateOpAct']:
                 self._opmode_to_aut()
                 self.attributes['StateAutOp'].set_value(False)
 
     def set_state_off_aut(self, value: bool):
-        logging.debug(f'StateOffAut set to {value}')
+        _logger.debug(f'StateOffAut set to {value}')
         if self.attributes['StateChannel'].value and value and self.switch_to_offline_mode_allowed:
             if self.attributes['StateAutAct'] or self.attributes['StateOpAct']:
                 self._opmode_to_off()
 
     def set_state_off_op(self, value: bool):
-        logging.debug(f'StateOffOp set to {value}')
+        _logger.debug(f'StateOffOp set to {value}')
         if not self.attributes['StateChannel'].value and value and self.switch_to_offline_mode_allowed:
             if self.attributes['StateAutAct'] or self.attributes['StateOpAct']:
                 self._opmode_to_off()
                 self.attributes['StateOffOp'].set_value(False)
 
     def set_state_op_aut(self, value: bool):
-        logging.debug(f'StateOpAut set to {value}')
+        _logger.debug(f'StateOpAut set to {value}')
         if self.attributes['StateChannel'].value and value:
             if self.attributes['StateOffAct'] or self.attributes['StateOpAct']:
                 self._opmode_to_op()
 
     def set_state_op_op(self, value: bool):
-        logging.debug(f'StateOpOp set to {value}')
+        _logger.debug(f'StateOpOp set to {value}')
         if not self.attributes['StateChannel'].value and value:
             if self.attributes['StateOffAct'] or self.attributes['StateAutAct']:
                 self._opmode_to_op()
@@ -188,20 +190,20 @@ class OperationSourceMode:
     def _src_to_off(self):
         self.attributes['SrcIntAct'].set_value(False)
         self.attributes['SrcExtAct'].set_value(False)
-        logging.debug('Source mode is now off')
+        _logger.debug('Source mode is now off')
 
     def _src_to_int(self):
         self.attributes['SrcIntAct'].set_value(True)
         self.attributes['SrcExtAct'].set_value(False)
-        logging.debug('Source mode is now int')
+        _logger.debug('Source mode is now int')
 
     def _src_to_ext(self):
         self.attributes['SrcIntAct'].set_value(False)
         self.attributes['SrcExtAct'].set_value(True)
-        logging.debug('Source mode is now ext')
+        _logger.debug('Source mode is now ext')
 
     def set_src_channel(self, value: bool):
-        logging.debug('Source mode channel is now %s' % value)
+        _logger.debug('Source mode channel is now %s' % value)
 
     def set_src_ext_aut(self, value: bool):
         if not self.attributes['StateOffAct'].value and value:
@@ -256,20 +258,20 @@ class OperationSourceModeActiveElements(OperationSourceMode):
     def _src_to_off(self):
         self.attributes['SrcIntAct'].set_value(False)
         self.attributes['SrcManAct'].set_value(False)
-        logging.debug('Source mode is now off')
+        _logger.debug('Source mode is now off')
 
     def _src_to_int(self):
         self.attributes['SrcIntAct'].set_value(True)
         self.attributes['SrcManAct'].set_value(False)
-        logging.debug('Source mode is now int')
+        _logger.debug('Source mode is now int')
 
     def _src_to_man(self):
         self.attributes['SrcIntAct'].set_value(False)
         self.attributes['SrcManAct'].set_value(True)
-        logging.debug('Source mode is now man')
+        _logger.debug('Source mode is now man')
 
     def set_src_channel(self, value: bool):
-        logging.debug('Source mode channel is now %s' % value)
+        _logger.debug('Source mode channel is now %s' % value)
 
     def set_src_man_aut(self, value: bool):
         if not self.attributes['StateOffAct'].value and value:

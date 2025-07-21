@@ -11,6 +11,8 @@ from MTPPy_Async.src.mtppy.state_codes import StateCodes
 from MTPPy_Async.src.mtppy.procedure import Procedure
 from MTPPy_Async.src.mtppy.suc_data_assembly import SUCOperationElement
 
+_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+
 StateCodes = StateCodes()
 
 
@@ -81,7 +83,7 @@ class Service(SUCServiceControl):
         Applies configuration parameters.
         :return:
         """
-        logging.debug('Applying service configuration parameters')
+        _logger.debug('Applying service configuration parameters')
         for configuration_parameter in self.configuration_parameters.values():
             configuration_parameter.set_v_out()
 

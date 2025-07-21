@@ -5,6 +5,8 @@ from MTPPy_Async.src.mtppy.service import Service
 from MTPPy_Async.src.mtppy.suc_data_assembly import SUCDataAssembly, SUCActiveElement
 from MTPPy_Async.src.mtppy.mtp_generator import MTPGenerator
 
+_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+
 
 class OPCUAServerPEA:
     def __init__(self, mtp_generator: MTPGenerator = None, endpoint: str = 'opc.tcp://127.0.0.1:4840/'):
@@ -44,7 +46,7 @@ class OPCUAServerPEA:
         Initialises an OPC UA server and sets the endpoint.
         :return:
         """
-        logging.info(f'Initialisation of OPC UA server: {self.endpoint}')
+        _logger.info(f'Initialisation of OPC UA server: {self.endpoint}')
         self.opcua_server = Server()
         self.opcua_server.set_endpoint(self.endpoint)
         # self.opcua_ns = self.opcua_server.register_namespace('namespace_idx')
@@ -81,7 +83,7 @@ class OPCUAServerPEA:
         Creates an OPC UA server instance including required nodes according to defined data assemblies.
         :return:
         """
-        logging.info(f'Adding OPC UA nodes to the server structure according to the PEA structure:')
+        _logger.info(f'Adding OPC UA nodes to the server structure according to the PEA structure:')
         ns = self.opcua_ns
         server = self.opcua_server.get_objects_node()
 
@@ -97,13 +99,13 @@ class OPCUAServerPEA:
             self.mtp.add_opcua_server(self.endpoint)
 
         for service in self.service_set.values():
-            logging.info(f'- service {service.tag_name}')
+            _logger.info(f'- service {service.tag_name}')
             self._create_opcua_objects_for_folders(service, services_node_id, services_node)
 
         act_elem_node_id = f'ns={ns};s=active_elements'
         act_elem_node = server.add_folder(act_elem_node_id, "active_elements")
         for active_element in self.active_elements.values():
-            logging.info(f'- active element {active_element.tag_name}')
+            _logger.info(f'- active element {active_element.tag_name}')
             self._create_opcua_objects_for_folders(active_element, act_elem_node_id, act_elem_node)
 
         # add SupportedRoleClass to all InternalElements
@@ -112,7 +114,7 @@ class OPCUAServerPEA:
 
         # export manifest.aml
         if self.mtp:
-            logging.info(f'MTP manifest export to {self.mtp.export_path}')
+            _logger.info(f'MTP manifest export to {self.mtp.export_path}')
             self.mtp.export_manifest()
 
     def _create_opcua_objects_for_folders(self, data_assembly: SUCDataAssembly, parent_opcua_prefix: str, parent_opcua_object):
@@ -183,7 +185,7 @@ class OPCUAServerPEA:
             opcua_type = self._infer_data_type(attr.type)
             opcua_node_obj = parent_opcua_object.add_variable(attribute_node_id, attr.name, attr.init_value,
                                                               varianttype=opcua_type)
-            logging.debug(
+            _logger.debug(
                 f'OPCUA Node: {attribute_node_id}, Name: {attr.name}, Value: {attr.init_value}')
             opcua_node_obj.set_writable(False)
             opcua_comm_obj = OPCUACommunicationObject(opcua_node_obj, node_id=opcua_node_obj)
@@ -317,7 +319,7 @@ class Marshalling(object):
                 callback(val)
             except Exception as exc:
                 pass
-                logging.warning(f'Something wrong with callback {callback}: {exc}')
+                _logger.warning(f'Something wrong with callback {callback}: {exc}')
 
     def find_set_callback(self, node_id):
         """

@@ -2,6 +2,8 @@ import logging
 
 from MTPPy_Async.src.mtppy.suc_data_assembly import *
 
+_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+
 
 class Procedure(SUCServiceProcedure):
     def __init__(self, procedure_id: int, tag_name: str, tag_description: str = '', is_self_completing: bool = False,
@@ -66,6 +68,6 @@ class Procedure(SUCServiceProcedure):
         Applies procedure parameters.
         :return:
         """
-        logging.debug('Applying procedure parameters')
+        _logger.debug('Applying procedure parameters')
         for procedure_parameter in self.procedure_parameters.values():
             procedure_parameter.set_v_out()

@@ -4,6 +4,8 @@ from MTPPy_Async.src.mtppy.attribute import Attribute
 from MTPPy_Async.src.mtppy.operation_source_mode import OperationSourceMode
 from MTPPy_Async.src.mtppy.suc_data_assembly import SUCOperationElement
 
+_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+
 
 class AnaServParam(SUCOperationElement):
     def __init__(self, tag_name: str, tag_description: str = '', v_min: float = 0, v_max: float = 100,
@@ -35,17 +37,17 @@ class AnaServParam(SUCOperationElement):
         self._add_attribute(Attribute('Sync', bool, False))
 
     def set_v_op(self, value):
-        logging.debug('VOp set to %s' % value)
+        _logger.debug('VOp set to %s' % value)
         if self.op_src_mode.attributes['StateOpAct']:
             self.set_v_req(value)
 
     def set_v_int(self, value):
-        logging.debug('VInt set to %s' % value)
+        _logger.debug('VInt set to %s' % value)
         if self.op_src_mode.attributes['StateAutAct'] and self.op_src_mode.attributes['SrcIntAct']:
             self.set_v_req(value)
 
     def set_v_ext(self, value):
-        logging.debug('VExt set to %s' % value)
+        _logger.debug('VExt set to %s' % value)
         if self.op_src_mode.attributes['StateAutAct'] and self.op_src_mode.attributes['SrcExtAct']:
             self.set_v_req(value)
 
@@ -58,22 +60,22 @@ class AnaServParam(SUCOperationElement):
     def set_v_req(self, value):
         if self.valid_value(value):
             self.attributes['VReq'].set_value(value)
-            logging.debug('VReq set to %s' % value)
+            _logger.debug('VReq set to %s' % value)
         else:
-            logging.debug('VReq cannot be set to %s (out of range)' % value)
+            _logger.debug('VReq cannot be set to %s (out of range)' % value)
 
     def set_v_out(self):
         v_req = self.attributes['VReq'].value
         self.attributes['VOut'].set_value(v_req)
         self.set_v_fbk(v_req)
-        logging.debug('VOut set to %s' % v_req)
+        _logger.debug('VOut set to %s' % v_req)
 
     def get_v_out(self):
         return self.attributes['VOut'].value
 
     def set_v_fbk(self, value):
         self.attributes['VFbk'].set_value(value)
-        logging.debug('VFbk set to %s' % value)
+        _logger.debug('VFbk set to %s' % value)
 
 
 class BinServParam(SUCOperationElement):
@@ -99,36 +101,36 @@ class BinServParam(SUCOperationElement):
         self._add_attribute(Attribute('Sync', bool, False))
 
     def set_v_op(self, value):
-        logging.debug('VOp set to %s' % value)
+        _logger.debug('VOp set to %s' % value)
         if self.op_src_mode.attributes['StateOpAct']:
             self.set_v_req(value)
 
     def set_v_int(self, value):
-        logging.debug('VInt set to %s' % value)
+        _logger.debug('VInt set to %s' % value)
         if self.op_src_mode.attributes['StateAutAct'] and self.op_src_mode.attributes['SrcIntAct']:
             self.set_v_req(value)
 
     def set_v_ext(self, value):
-        logging.debug('VExt set to %s' % value)
+        _logger.debug('VExt set to %s' % value)
         if self.op_src_mode.attributes['StateAutAct'] and self.op_src_mode.attributes['SrcExtAct']:
             self.set_v_req(value)
 
     def set_v_req(self, value):
         self.attributes['VReq'].set_value(value)
-        logging.debug('VReq set to %s' % value)
+        _logger.debug('VReq set to %s' % value)
 
     def set_v_out(self):
         v_req = self.attributes['VReq'].value
         self.attributes['VOut'].set_value(v_req)
         self.set_v_fbk(v_req)
-        logging.debug('VOut set to %s' % v_req)
+        _logger.debug('VOut set to %s' % v_req)
 
     def get_v_out(self):
         return self.attributes['VOut'].value
 
     def set_v_fbk(self, value):
         self.attributes['VFbk'].set_value(value)
-        logging.debug('VFbk set to %s' % value)
+        _logger.debug('VFbk set to %s' % value)
 
 
 class DIntServParam(SUCOperationElement):
@@ -161,17 +163,17 @@ class DIntServParam(SUCOperationElement):
         self._add_attribute(Attribute('Sync', bool, False))
 
     def set_v_op(self, value):
-        logging.debug('VOp set to %s' % value)
+        _logger.debug('VOp set to %s' % value)
         if self.op_src_mode.attributes['StateOpAct']:
             self.set_v_req(value)
 
     def set_v_int(self, value):
-        logging.debug('VInt set to %s' % value)
+        _logger.debug('VInt set to %s' % value)
         if self.op_src_mode.attributes['StateAutAct'] and self.op_src_mode.attributes['SrcIntAct']:
             self.set_v_req(value)
 
     def set_v_ext(self, value):
-        logging.debug('VExt set to %s' % value)
+        _logger.debug('VExt set to %s' % value)
         if self.op_src_mode.attributes['StateAutAct'] and self.op_src_mode.attributes['SrcExtAct']:
             self.set_v_req(value)
 
@@ -184,22 +186,22 @@ class DIntServParam(SUCOperationElement):
     def set_v_req(self, value):
         if self.valid_value(value):
             self.attributes['VReq'].set_value(value)
-            logging.debug('VReq set to %s' % value)
+            _logger.debug('VReq set to %s' % value)
         else:
-            logging.debug('VReq cannot be set to %s (out of range)' % value)
+            _logger.debug('VReq cannot be set to %s (out of range)' % value)
 
     def set_v_out(self):
         v_req = self.attributes['VReq'].value
         self.attributes['VOut'].set_value(v_req)
         self.set_v_fbk(v_req)
-        logging.debug('VOut set to %s' % v_req)
+        _logger.debug('VOut set to %s' % v_req)
 
     def get_v_out(self):
         return self.attributes['VOut'].value
 
     def set_v_fbk(self, value):
         self.attributes['VFbk'].set_value(value)
-        logging.debug('VFbk set to %s' % value)
+        _logger.debug('VFbk set to %s' % value)
 
 
 class StringServParam(SUCOperationElement):
@@ -220,17 +222,17 @@ class StringServParam(SUCOperationElement):
         self._add_attribute(Attribute('Sync', bool, False))
 
     def set_v_op(self, value):
-        logging.debug('VOp set to %s' % value)
+        _logger.debug('VOp set to %s' % value)
         if self.op_src_mode.attributes['StateOpAct']:
             self.set_v_req(value)
 
     def set_v_int(self, value):
-        logging.debug('VInt set to %s' % value)
+        _logger.debug('VInt set to %s' % value)
         if self.op_src_mode.attributes['StateAutAct'] and self.op_src_mode.attributes['SrcIntAct']:
             self.set_v_req(value)
 
     def set_v_ext(self, value):
-        logging.debug('VExt set to %s' % value)
+        _logger.debug('VExt set to %s' % value)
         if self.op_src_mode.attributes['StateAutAct'] and self.op_src_mode.attributes['SrcExtAct']:
             self.set_v_req(value)
 
@@ -240,19 +242,19 @@ class StringServParam(SUCOperationElement):
     def set_v_req(self, value):
         if self.valid_value(value):
             self.attributes['VReq'].set_value(value)
-            logging.debug('VReq set to %s' % value)
+            _logger.debug('VReq set to %s' % value)
         else:
-            logging.debug('VReq cannot be set to %s (out of range)' % value)
+            _logger.debug('VReq cannot be set to %s (out of range)' % value)
 
     def set_v_out(self):
         v_req = self.attributes['VReq'].value
         self.attributes['VOut'].set_value(v_req)
         self.set_v_fbk(v_req)
-        logging.debug('VOut set to %s' % v_req)
+        _logger.debug('VOut set to %s' % v_req)
 
     def get_v_out(self):
         return self.attributes['VOut'].value
 
     def set_v_fbk(self, value):
         self.attributes['VFbk'].set_value(value)
-        logging.debug('VFbk set to %s' % value)
+        _logger.debug('VFbk set to %s' % value)

@@ -3,6 +3,8 @@ import logging
 from MTPPy_Async.src.mtppy.attribute import Attribute
 from MTPPy_Async.src.mtppy.operation_source_mode import OperationSourceMode
 
+_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+
 
 class ProcedureControl:
     def __init__(self, procedures: dict, service_op_src_mode: OperationSourceMode):
@@ -24,17 +26,17 @@ class ProcedureControl:
         self.default_procedure_id = None
 
     def set_procedure_op(self, value: int):
-        logging.debug('ProcedureOP set to %s' % value)
+        _logger.debug('ProcedureOP set to %s' % value)
         if self.op_src_mode.attributes['StateOpAct'].value:
             self.set_procedure_req(value)
 
     def set_procedure_int(self, value: int):
-        logging.debug('ProcedureInt set to %s' % value)
+        _logger.debug('ProcedureInt set to %s' % value)
         if self.op_src_mode.attributes['StateAutAct'].value and self.op_src_mode.attributes['SrcIntAct'].value:
             self.set_procedure_req(value)
 
     def set_procedure_ext(self, value: int):
-        logging.debug('ProcedureExt set to %s' % value)
+        _logger.debug('ProcedureExt set to %s' % value)
         if self.op_src_mode.attributes['StateAutAct'].value and self.op_src_mode.attributes['SrcExtAct'].value:
             self.set_procedure_req(value)
 
@@ -47,14 +49,14 @@ class ProcedureControl:
     def set_procedure_req(self, value: int):
         if self.valid_value(value):
             self.attributes['ProcedureReq'].set_value(value)
-            logging.debug('ProcedureReq set to %s' % value)
+            _logger.debug('ProcedureReq set to %s' % value)
         else:
-            logging.debug('ProcedureReq cannot be set to %s (out of range)' % value)
+            _logger.debug('ProcedureReq cannot be set to %s (out of range)' % value)
 
     def set_procedure_cur(self):
         procedure_req = self.attributes['ProcedureReq'].value
         self.attributes['ProcedureCur'].set_value(procedure_req)
-        logging.debug('ProcedureCur set to %s' % procedure_req)
+        _logger.debug('ProcedureCur set to %s' % procedure_req)
 
     def get_procedure_cur(self):
         return self.attributes['ProcedureCur'].value

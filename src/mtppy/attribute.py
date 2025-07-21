@@ -1,5 +1,7 @@
 import logging
 
+_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+
 
 class Attribute:
     def __init__(self, name: str, data_type, init_value, sub_cb=None):
@@ -34,7 +36,7 @@ class Attribute:
             if self.comm_obj.write_value_callback is not None:
                 self.comm_obj.write_value_callback(self.value)
 
-        logging.debug(f'New value for {self.name} is {self.value}')
+        _logger.debug(f'New value for {self.name} is {self.value}')
         return True
 
     def _correct_type(self, value):
