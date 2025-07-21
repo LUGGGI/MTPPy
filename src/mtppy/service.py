@@ -15,15 +15,16 @@ StateCodes = StateCodes()
 
 
 class Service(SUCServiceControl):
-    def __init__(self, tag_name: str, tag_description: str):
+    def __init__(self, tag_name: str, tag_description: str, scheduler: callable = None):
         """
         Represents a service of the PEA.
         :param tag_name: Tag name of the service.
         :param tag_description: Tag description of the service.
+        :param scheduler: Scheduler to run the jobs.
         """
         super().__init__(tag_name, tag_description)
 
-        self.thread_ctrl = ThreadControl()
+        self.thread_ctrl = ThreadControl(scheduler)
         self.op_src_mode = OperationSourceMode()
 
         self.configuration_parameters = {}
