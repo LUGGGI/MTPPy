@@ -25,7 +25,7 @@ class Service(SUCServiceControl):
         """
         super().__init__(tag_name, tag_description)
 
-        self.thread_ctrl = ThreadControl()
+        self.thread_ctrl = ThreadControl(service_name=tag_name)
         self.op_src_mode = OperationSourceMode()
 
         self.configuration_parameters = {}
