@@ -29,13 +29,17 @@ class CommandCodes:
     def get_list_int(self):
         """
         Provides a list of all command codes in int format.
-        :return:
+
+        Returns:
+            list: List of command codes in int format.
         """
         return list(self.int_code.keys())
 
     def get_list_str(self):
         """
         Provides a list of all command codes in string format.
-        :return:
+
+        Returns:
+            list: List of command codes in string format.
         """
         return list(self.int_code.values())

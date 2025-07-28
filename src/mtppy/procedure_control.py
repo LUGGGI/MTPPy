@@ -10,8 +10,10 @@ class ProcedureControl:
     def __init__(self, procedures: dict, service_op_src_mode: OperationSourceMode):
         """
         Represents the procedure control.
-        :param procedures: Procedures.
-        :param service_op_src_mode: Operation and source mode of the service.
+
+        Args:
+            procedures (dict): Procedures.
+            service_op_src_mode (OperationSourceMode): Operation and source mode of the service.
         """
         self.attributes = {
             'ProcedureOp': Attribute('ProcedureOp', int, init_value=0, sub_cb=self.set_procedure_op),

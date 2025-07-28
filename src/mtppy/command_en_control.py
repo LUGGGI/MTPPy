@@ -28,7 +28,6 @@ class CommandEnControl:
     def set_default(self):
         """
         Applies default values to all command enable flags.
-        :return:
         """
         for command_en in self.command_en:
             self.command_en[command_en]['value'] = self.command_en[command_en]['default']
@@ -36,7 +35,6 @@ class CommandEnControl:
     def disable_all(self):
         """
         Sets False to all command enable flags.
-        :return:
         """
         for command_en in self.command_en:
             self.command_en[command_en]['value'] = False
@@ -44,8 +42,12 @@ class CommandEnControl:
     def is_enabled(self, cmd: str):
         """
         Checks if a given command is enabled right now.
-        :param cmd: Command to check.
-        :return: Command enable flag state.
+
+        Args:
+            cmd (str): Command to check.
+
+        Returns:
+            bool: Command enable flag state.
         """
         if cmd in self.command_en.keys():
             return self.command_en[cmd]['value']
@@ -55,7 +57,9 @@ class CommandEnControl:
     def get_command_en(self):
         """
         Calculates a sum of all command enable flags.
-        :return: Sum of all command enable flags.
+
+        Returns:
+            int: Sum of all command enable flags.
         """
         command_en_sum = 0
         for command in self.command_en.values():
@@ -66,9 +70,10 @@ class CommandEnControl:
     def set_command_en(self, cmd: str, value: bool):
         """
         Sets a specific command enable to a given value.
-        :param cmd: Command enable flag.
-        :param value: Value to be set.
-        :return:
+
+        Args:
+            cmd (str): Command enable flag.
+            value (bool): Value to be set.
         """
         if cmd in self.command_en.keys():
             self.command_en[cmd]['value'] = value
@@ -76,37 +81,44 @@ class CommandEnControl:
     def enable_hold_loop(self, value: bool):
         """
         Enables hold loop.
-        :param value: True if the hold loop is to active and False if to disable.
-        :return:
+
+        Args:
+            value (bool): True if the hold loop is to active and False if to disable.
         """
         self.hold_enabled = value
 
     def enable_pause_loop(self, value: bool):
         """
         Enables pause loop.
-        :param value: True if the pause loop is to active and False if to disable.
-        :return:
+
+        Args:
+            value (bool): True if the pause loop is to active and False if to disable.
         """
         self.pause_enabled = value
 
     def enable_restart(self, value: bool):
         """
         Enables restart loop.
-        :param value: True if the restart command is to active and False if to disable.
-        :return:
+
+        Args:
+            value (bool): True if the restart command is to active and False if to disable.
         """
         self.restart_enabled = value
 
     def execute(self, state: str):
         """
         Executes command enable changes required for a certain state.
-        :param state: Given state.
-        :return:
+
+        Args:
+            state (str): Given state.
         """
         _logger.debug(f'CommandEn changed to correspond {state}')
         exec(f'self._execute_{state}()')
 
     def _execute_undefined(self):
+        """
+        Disables all command enable flags.
+        """
         self.disable_all()
 
     def _execute_idle(self):

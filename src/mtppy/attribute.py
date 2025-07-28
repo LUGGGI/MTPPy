@@ -8,10 +8,12 @@ class Attribute:
         """
         Atttribute represents an elementary object (attribute or parameter) of a data assembly. Depending on whether
         subscription callback is defined or not, it might be an monitored object or a static OPC UA node.
-        :param name: Attribute name.
-        :param data_type: Attribute type.
-        :param init_value: Initial value of the attribute.
-        :param sub_cb: Subscription callback if applied.
+
+        Args:
+            name (str): Attribute name.
+            data_type (type): Attribute type.
+            init_value (type): Initial value of the attribute.
+            sub_cb (callable, optional): Subscription callback if applied.
         """
         self.name = name
         self.type = data_type
@@ -24,8 +26,12 @@ class Attribute:
     def set_value(self, value):
         """
         Set value of the attribute.
-        :param value: Value.
-        :return: Returns True if value was applied.
+
+        Args:
+            value (type): Value.
+
+        Returns:
+            bool: Returns True if value was applied.
         """
         self.value = self._correct_type(value)
 
@@ -42,8 +48,15 @@ class Attribute:
     def _correct_type(self, value):
         """
         Converts a value to the attribute type.
-        :param value: Value.
-        :return: Converted value. If conversion is not possible, returns a default value of that type.
+
+        Args:
+            value (type): Value.
+
+        Returns:
+            type: Converted value. If conversion is not possible, returns a default value of that type.
+
+        Raises:
+            Exception: If conversion fails.
         """
         try:
             converted_value = self.type(value)
@@ -54,7 +67,8 @@ class Attribute:
     def attach_communication_object(self, communication_object):
         """
         Attach a communication object to the attribute, e.g. if an OPC UA node needs to be created for the attribute.
-        :param communication_object: Communication object.
-        :return:
+
+        Args:
+            communication_object (type): Communication object.
         """
         self.comm_obj = communication_object

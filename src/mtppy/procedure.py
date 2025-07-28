@@ -10,11 +10,13 @@ class Procedure(SUCServiceProcedure):
                  is_default: bool = False):
         """
         Represents a procedure of a service.
-        :param procedure_id: Procedure id.
-        :param tag_name: Tag name of the procedure.
-        :param tag_description: Tag description of the procedure.
-        :param is_self_completing: Self-completing or not.
-        :param is_default: Default or not.
+
+        Args:
+            procedure_id (int): Procedure id.
+            tag_name (str): Tag name of the procedure.
+            tag_description (str): Tag description of the procedure.
+            is_self_completing (bool): Self-completing or not.
+            is_default (bool): Default or not.
         """
         super().__init__(procedure_id, tag_name, tag_description, is_self_completing, is_default)
         self.procedure_parameters = {}
@@ -25,8 +27,12 @@ class Procedure(SUCServiceProcedure):
     def add_procedure_parameter(self, procedure_parameter: SUCOperationElement):
         """
         Adds a procedure parameter to the procedure.
-        :param procedure_parameter: Procedure parameter.
-        :return:
+
+        Args:
+            procedure_parameter (SUCOperationElement): Procedure parameter.
+
+        Raises:
+            TypeError: If procedure_parameter is not an instance of SUCOperationElement.
         """
         if isinstance(procedure_parameter, SUCOperationElement):
             self.procedure_parameters[procedure_parameter.tag_name] = procedure_parameter
@@ -35,17 +41,25 @@ class Procedure(SUCServiceProcedure):
 
     def add_procedure_value_in(self, process_value_in):
         """
-        Adds an value in to the procedure. NOT IMPLEMENTED.
-        :param process_value_in: Value in.
-        :return:
+        Adds a value in to the procedure. NOT IMPLEMENTED.
+
+        Args:
+            process_value_in: Value in.
+
+        Raises:
+            NotImplementedError: Always raised as the method is not implemented.
         """
         raise NotImplementedError()
 
     def add_report_value(self, report_value: SUCIndicatorElement):
         """
         Adds a report value to the procedure.
-        :param report_value: Report value.
-        :return:
+
+        Args:
+            report_value (SUCIndicatorElement): Report value.
+
+        Raises:
+            TypeError: If report_value is not an instance of SUCIndicatorElement.
         """
         if isinstance(report_value, SUCIndicatorElement):
             self.report_values[report_value.tag_name] = report_value
@@ -54,9 +68,13 @@ class Procedure(SUCServiceProcedure):
 
     def add_procedure_value_out(self, process_value_out: SUCIndicatorElement):
         """
-        Adds an value out to the procedure.
-        :param process_value_out: Value in.
-        :return:
+        Adds a value out to the procedure.
+
+        Args:
+            process_value_out (SUCIndicatorElement): Value out.
+
+        Raises:
+            TypeError: If process_value_out is not an instance of SUCIndicatorElement.
         """
         if isinstance(process_value_out, SUCIndicatorElement):
             self.process_value_outs[process_value_out.tag_name] = process_value_out
@@ -66,7 +84,6 @@ class Procedure(SUCServiceProcedure):
     def apply_procedure_parameters(self):
         """
         Applies procedure parameters.
-        :return:
         """
         _logger.debug('Applying procedure parameters')
         for procedure_parameter in self.procedure_parameters.values():

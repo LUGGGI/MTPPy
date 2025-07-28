@@ -2,8 +2,10 @@ class OPCUACommunicationObject:
     def __init__(self, opcua_node_obj, node_id):
         """
         Represents a communication object for OPC UA for an attribute instance.
-        :param opcua_node_obj: OPC UA node object.
-        :param node_id: OPCUA node id.
+
+        Args:
+            opcua_node_obj (object): OPC UA node object.
+            node_id (str): OPCUA node id.
         """
         self.opcua_node_obj = opcua_node_obj
         self.node_id = node_id

@@ -12,9 +12,10 @@ class OPCUAServerPEA:
     def __init__(self, mtp_generator: MTPGenerator = None, endpoint: str = 'opc.tcp://127.0.0.1:4840/'):
         """
         Defines an OPC UA server for PEA.
-        :param mtp_generator: Instance of an MTP generator. If specified, an MTP file is generated each time
-        the class is instantiated. If not specified, no MTP file is going to be generated.
-        :param endpoint: Endpoint of the OPC UA server. If not specified, opc.tcp://0.0.0.0:4840/ is used.
+
+        Args:
+            mtp_generator (MTPGenerator): Instance of an MTP generator.
+            endpoint (str): Endpoint of the OPC UA server.
         """
         self.service_set = {}
         self.active_elements = {}
@@ -28,23 +29,24 @@ class OPCUAServerPEA:
     def add_service(self, service: Service):
         """
         Add a service to the PEA.
-        :param service: Service instance.
-        :return:
+
+        Args:
+            service (Service): Service instance.
         """
         self.service_set[service.tag_name] = service
 
     def add_active_element(self, active_element: SUCActiveElement):
         """
         Add an active element to the PEA.
-        :param active_element: Active element (e.g. AnaVlv, BinVlv, etc.)
-        :return:
+
+        Args:
+            active_element (SUCActiveElement): Active element (e.g., AnaVlv, BinVlv, etc.).
         """
         self.active_elements[active_element.tag_name] = active_element
 
     def _init_opcua_server(self):
         """
-        Initialises an OPC UA server and sets the endpoint.
-        :return:
+        Initializes an OPC UA server and sets the endpoint.
         """
         _logger.info(f'Initialisation of OPC UA server: {self.endpoint}')
         self.opcua_server = Server()
@@ -54,34 +56,39 @@ class OPCUAServerPEA:
     def get_opcua_server(self):
         """
         Get an OPC UA server instance object.
-        :return:
+
+        Returns:
+            Server: OPC UA server instance.
         """
         return self.opcua_server
 
     def get_opcua_ns(self):
         """
         Get an OPC UA server namespace index.
-        :return:
+
+        Returns:
+            int: Namespace index.
         """
         return self.opcua_ns
 
     def run_opcua_server(self):
         """
         Starts the OPC UA server instance.
-        :return:
         """
         self.opcua_server.start()
         self._build_opcua_server()
         self._start_subscription()
 
     def set_services_in_idle(self):
+        """
+        Sets all services to idle state.
+        """
         for service in self.service_set.values():
             service.init_idle_state()
 
     def _build_opcua_server(self):
         """
         Creates an OPC UA server instance including required nodes according to defined data assemblies.
-        :return:
         """
         _logger.info(f'Adding OPC UA nodes to the server structure according to the PEA structure:')
         ns = self.opcua_ns
@@ -120,10 +127,11 @@ class OPCUAServerPEA:
     def _create_opcua_objects_for_folders(self, data_assembly: SUCDataAssembly, parent_opcua_prefix: str, parent_opcua_object):
         """
         Iterates over data assemblies to create OPC UA folders.
-        :param data_assembly: Data assembly.
-        :param parent_opcua_prefix: Prefix as a string to add in front of the data assembly tag.
-        :param parent_opcua_object: Parent OPC UA node where the data assembly is to add to.
-        :return:
+
+        Args:
+            data_assembly (SUCDataAssembly): Data assembly.
+            parent_opcua_prefix (str): Prefix to add in front of the data assembly tag.
+            parent_opcua_object: Parent OPC UA node where the data assembly is added.
         """
         da_node_id = f'{parent_opcua_prefix}.{data_assembly.tag_name}'
         da_node = parent_opcua_object.add_folder(da_node_id, data_assembly.tag_name)
@@ -172,11 +180,12 @@ class OPCUAServerPEA:
     def _create_opcua_objects_for_leaves(self, opcua_object, parent_opcua_prefix: str, parent_opcua_object, par_instance):
         """
         Iterates over end objects (leaves) of data assemblies to create corresponding OPC UA nodes.
-        :param opcua_object: Element of a data assembly that an OPC UA node is to create for.
-        :param parent_opcua_prefix: Prefix as a string to add in front of the data assembly tag.
-        :param parent_opcua_object: Parent OPC UA node where the data assembly is to add to.
-        :param par_instance: Parameter instance.
-        :return:
+
+        Args:
+            opcua_object: Element of a data assembly that an OPC UA node is created for.
+            parent_opcua_prefix (str): Prefix to add in front of the data assembly tag.
+            parent_opcua_object: Parent OPC UA node where the data assembly is added.
+            par_instance: Parameter instance.
         """
         for attr in opcua_object.attributes.values():
             attribute_node_id = f'{parent_opcua_prefix}.{attr.name}'
@@ -221,9 +230,13 @@ class OPCUAServerPEA:
     @staticmethod
     def _infer_data_type(attribute_data_type):
         """
-        Translate a python data type to a suitable OPC UA data type.
-        :param attribute_data_type: Python variable.
-        :return: OPC UA data type
+        Translate a Python data type to a suitable OPC UA data type.
+
+        Args:
+            attribute_data_type (type): Python variable type.
+
+        Returns:
+            ua.VariantType: OPC UA data type.
         """
         if attribute_data_type == int:
             return ua.VariantType.Int64
@@ -239,7 +252,6 @@ class OPCUAServerPEA:
     def _start_subscription(self):
         """
         Subscribes to defined OPC UA nodes.
-        :return:
         """
         handler = Marshalling()
         handler.import_subscription_list(self.subscription_list)
@@ -256,10 +268,11 @@ class SubscriptionList:
 
     def append(self, node_id, cb_value_change):
         """
-        Add an subscription entity.
-        :param node_id: OPC UA node.
-        :param cb_value_change: Callback function for a value change.
-        :return:
+        Add a subscription entity.
+
+        Args:
+            node_id: OPC UA node.
+            cb_value_change (function): Callback function for a value change.
         """
         identifier = node_id.nodeid.Identifier
         self.sub_list[identifier] = {'node_id': node_id, 'callback': cb_value_change}
@@ -267,7 +280,9 @@ class SubscriptionList:
     def get_nodeid_list(self):
         """
         Extract a list of node ids in the subscription list.
-        :return: List of node ids.
+
+        Returns:
+            list: List of node ids.
         """
         if len(self.sub_list) == 0:
             return None
@@ -280,8 +295,12 @@ class SubscriptionList:
     def get_callback(self, node_id):
         """
         Get a callback function for a specific OPC UA node.
-        :param node_id: OPC UA node id
-        :return:
+
+        Args:
+            node_id: OPC UA node id.
+
+        Returns:
+            function: Callback function.
         """
         identifier = node_id.nodeid.Identifier
         if identifier in self.sub_list.keys():
@@ -300,18 +319,20 @@ class Marshalling(object):
     def import_subscription_list(self, subscription_list: SubscriptionList):
         """
         Import a subscription list.
-        :param subscription_list: Subscription list.
-        :return:
+
+        Args:
+            subscription_list (SubscriptionList): Subscription list.
         """
         self.subscription_list = subscription_list
 
     def datachange_notification(self, node, val, data):
         """
         Executes a callback function if data value changes.
-        :param node: OPC UA node.
-        :param val: Value after change.
-        :param data: Not used.
-        :return:
+
+        Args:
+            node: OPC UA node.
+            val: Value after change.
+            data: Not used.
         """
         callback = self.find_set_callback(node)
         if callback is not None:
@@ -324,7 +345,11 @@ class Marshalling(object):
     def find_set_callback(self, node_id):
         """
         Finds a callback function to a specific OPC UA node by nodeid.
-        :param node_id: Node id.
-        :return: Callback function.
+
+        Args:
+            node_id: Node id.
+
+        Returns:
+            function: Callback function.
         """
         return self.subscription_list.get_callback(node_id)

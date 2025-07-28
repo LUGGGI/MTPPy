@@ -20,8 +20,10 @@ class Service(SUCServiceControl):
     def __init__(self, tag_name: str, tag_description: str):
         """
         Represents a service of the PEA.
-        :param tag_name: Tag name of the service.
-        :param tag_description: Tag description of the service.
+
+        Args:
+            tag_name (str): Tag name of the service.
+            tag_description (str): Tag description of the service.
         """
         super().__init__(tag_name, tag_description)
 
@@ -44,9 +46,15 @@ class Service(SUCServiceControl):
         self.op_src_mode.add_exit_offline_callback(self.init_idle_state)
 
     def init_idle_state(self):
+        """
+        Initializes the idle state.
+        """
         self.state_change_callback()
 
     def state_change_callback(self):
+        """
+        Callback for state changes.
+        """
         if self.op_src_mode.attributes['StateOffAct'].value:
             return
 
@@ -60,6 +68,15 @@ class Service(SUCServiceControl):
             self.op_src_mode.allow_switch_to_offline_mode(False)
 
     def is_state(self, state_str):
+        """
+        Checks if the current state matches the given state.
+
+        Args:
+            state_str (str): State to check.
+
+        Returns:
+            bool: True if the current state matches, False otherwise.
+        """
         if state_str is self.state_machine.get_current_state_str():
             return True
         else:
@@ -67,20 +84,23 @@ class Service(SUCServiceControl):
             return False
 
     def state_change(self):
+        """
+        Changes the state.
+        """
         self.state_machine.state_change()
 
     def add_configuration_parameter(self, configuration_parameter: SUCOperationElement):
         """
         Adds a configuration parameter to the service.
-        :param configuration_parameter: Configuration parameter.
-        :return:
+
+        Args:
+            configuration_parameter (SUCOperationElement): Configuration parameter to add.
         """
         self.configuration_parameters[configuration_parameter.tag_name] = configuration_parameter
 
     def apply_configuration_parameters(self):
         """
         Applies configuration parameters.
-        :return:
         """
         _logger.debug('Applying service configuration parameters')
         for configuration_parameter in self.configuration_parameters.values():
@@ -88,9 +108,10 @@ class Service(SUCServiceControl):
 
     def add_procedure(self, procedure: Procedure):
         """
-        Adds procedure to the service.
-        :param procedure: Procedure.
-        :return:
+        Adds a procedure to the service.
+
+        Args:
+            procedure (Procedure): Procedure to add.
         """
         self.procedures[procedure.attributes['ProcedureId'].value] = procedure
         if procedure.attributes['IsDefault'].value:
@@ -103,7 +124,6 @@ class Service(SUCServiceControl):
     def idle(self):
         """
         Idle state.
-        :return:
         """
         pass
 
@@ -111,7 +131,6 @@ class Service(SUCServiceControl):
     def starting(self):
         """
         Starting state.
-        :return:
         """
         pass
 
@@ -119,7 +138,6 @@ class Service(SUCServiceControl):
     def execute(self):
         """
         Execute state.
-        :return:
         """
         pass
 
@@ -127,7 +145,6 @@ class Service(SUCServiceControl):
     def completing(self):
         """
         Completing state.
-        :return:
         """
         pass
 
@@ -135,7 +152,6 @@ class Service(SUCServiceControl):
     def completed(self):
         """
         Completed state.
-        :return:
         """
         pass
 
@@ -143,7 +159,6 @@ class Service(SUCServiceControl):
     def pausing(self):
         """
         Pausing state.
-        :return:
         """
         pass
 
@@ -151,7 +166,6 @@ class Service(SUCServiceControl):
     def paused(self):
         """
         Paused state.
-        :return:
         """
         pass
 
@@ -159,7 +173,6 @@ class Service(SUCServiceControl):
     def resuming(self):
         """
         Resuming state.
-        :return:
         """
         pass
 
@@ -167,7 +180,6 @@ class Service(SUCServiceControl):
     def holding(self):
         """
         Holding state.
-        :return:
         """
         pass
 
@@ -175,7 +187,6 @@ class Service(SUCServiceControl):
     def held(self):
         """
         Held state.
-        :return:
         """
         pass
 
@@ -183,7 +194,6 @@ class Service(SUCServiceControl):
     def unholding(self):
         """
         Unholding state.
-        :return:
         """
         pass
 
@@ -191,7 +201,6 @@ class Service(SUCServiceControl):
     def stopping(self):
         """
         Stopping state.
-        :return:
         """
         pass
 
@@ -199,7 +208,6 @@ class Service(SUCServiceControl):
     def stopped(self):
         """
         Stopped state.
-        :return:
         """
         pass
 
@@ -207,7 +215,6 @@ class Service(SUCServiceControl):
     def aborting(self):
         """
         Aborting state.
-        :return:
         """
         pass
 
@@ -215,7 +222,6 @@ class Service(SUCServiceControl):
     def aborted(self):
         """
         Aborted state.
-        :return:
         """
         pass
 
@@ -223,6 +229,5 @@ class Service(SUCServiceControl):
     def resetting(self):
         """
         Resetting state.
-        :return:
         """
         pass

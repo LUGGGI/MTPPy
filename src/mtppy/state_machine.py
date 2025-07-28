@@ -18,9 +18,11 @@ class StateMachine:
                  execution_routine: callable):
         """
         Represents a state machine for a service.
-        :param operation_source_mode: Operation and source mode control.
-        :param procedure_control: Procedure control.
-        :param execution_routine: Execution routine for state changing.
+
+        Args:
+            operation_source_mode (OperationSourceMode): Operation and source mode control.
+            procedure_control (ProcedureControl): Procedure control.
+            execution_routine (callable): Execution routine for state changing.
         """
 
         self.attributes = {

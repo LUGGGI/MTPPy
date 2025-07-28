@@ -8,9 +8,11 @@ class MTPGenerator:
     def __init__(self, writer_infos: dict, export_path: str, manifest_template_path: str):
         """
         Represents an MTP generator.
-        :param writer_infos: Writer info section that will be put in the header of the generate manifest.
-        :param export_path: Path where to save the generated MTP manifest.
-        :param manifest_template_path: Path where the manifest template is placed.
+
+        Args:
+            writer_infos (dict): Writer info section that will be put in the header of the generated manifest.
+            export_path (str): Path where to save the generated MTP manifest.
+            manifest_template_path (str): Path where the manifest template is placed.
         """
 
         # path of a manifest template containing general infos
@@ -73,10 +75,12 @@ class MTPGenerator:
 
     def add_module_type_package(self, version: str, name: str, description: str):
         """
-        add internal element module type package to instance hierarchy mtp
-        :param version: version of mtp
-        :param name: name of mtp
-        :param description: description of mtp
+        Add internal element module type package to instance hierarchy MTP.
+
+        Args:
+            version (str): Version of MTP.
+            name (str): Name of MTP.
+            description (str): Description of MTP.
         """
 
         # create internal element
@@ -106,10 +110,14 @@ class MTPGenerator:
 
     def create_instance(self, data_assembly: SUCDataAssembly, opc_node_id: str) -> ET.Element:
         """
-        create instance for each data assembly
-        :param data_assembly: data assembly object
-        :param opc_node_id: opcua node id used to construct instance name
-        :return: manifest instance of data assembly
+        Create instance for each data assembly.
+
+        Args:
+            data_assembly (SUCDataAssembly): Data assembly object.
+            opc_node_id (str): OPC UA node ID used to construct instance name.
+
+        Returns:
+            ET.Element: Manifest instance of data assembly.
         """
         instance_id = self.random_id_generator()
         instance_name = opc_node_id.split('=')[-1]
@@ -123,13 +131,16 @@ class MTPGenerator:
     def add_data_assembly_to_instance_list(self, instance_name: str, instance_id: str,
                                            instance_basic_type: str, instance_type_name: str) -> ET.Element:
         """
-        add data object (subclasses of data assembly) to instance list
-        :param instance_name: name of data object
-        :param instance_id: id of data object
-        :param instance_basic_type: type of data assembly (service, Procedure, operation element etc.)
-        :param instance_type_name: used to distinguish data objects that have the same parent type (e.g. AnaSerParam,
-        StringSerParam, DIntSerParam, etc.)
-        :return: instance of data assembly
+        Add data object (subclasses of data assembly) to instance list.
+
+        Args:
+            instance_name (str): Name of data object.
+            instance_id (str): ID of data object.
+            instance_basic_type (str): Type of data assembly (service, Procedure, operation element etc.).
+            instance_type_name (str): Used to distinguish data objects that have the same parent type.
+
+        Returns:
+            ET.Element: Instance of data assembly.
         """
         if instance_basic_type == 'Service':
             name = instance_name + '.ServiceControl'
@@ -158,10 +169,14 @@ class MTPGenerator:
 
     def create_components_for_services(self, data_assembly: SUCDataAssembly, section: str) -> str:
         """
-        create components for InstanceHierarchy Services
-        :param parent_elem: parent element of current component (e.g. parent of a procedure is a service)
-        :param data_assembly: data assembly object
-        :return: component of services: eg. service, procedure, config parameter, procedure parameter etc.
+        Create components for InstanceHierarchy Services.
+
+        Args:
+            parent_elem (ET.Element): Parent element of current component (e.g. parent of a procedure is a service).
+            data_assembly (SUCDataAssembly): Data assembly object.
+
+        Returns:
+            ET.Element: Component of services (e.g., service, procedure, config parameter, procedure parameter, etc.).
         """
         services_component_id = self.random_id_generator()
         link_id = self.add_components_to_services(data_assembly, services_component_id, section)
@@ -242,9 +257,11 @@ class MTPGenerator:
     @staticmethod
     def add_linked_attr(parent: ET.Element, link_id: str):
         """
-        add attribute whose value refers to an InternalElement under InstanceList
-        :param parent: parent of attribute
-        :param link_id: id linking to another element
+        Add attribute whose value refers to an InternalElement under InstanceList.
+
+        Args:
+            parent (ET.Element): Parent of attribute.
+            link_id (str): ID linking to another element.
         """
         attr = ET.SubElement(parent, 'Attribute')
         attr.set('Name', 'RefID')
@@ -254,8 +271,10 @@ class MTPGenerator:
 
     def __add_services_set(self, linked_id: str):
         """
-        ServiceSet is an InternalElement which belongs to ModuleTypePackage
-        :param linked_id: Url or ID referring to instance hierarchy services
+        ServiceSet is an InternalElement which belongs to ModuleTypePackage.
+
+        Args:
+            linked_id (str): Url or ID referring to instance hierarchy services.
         """
         self.services_set = ET.SubElement(self.module_type_package, 'InternalElement')
         self.generate_attributes(self.services_set, 'Services', self.random_id_generator(),
@@ -266,8 +285,12 @@ class MTPGenerator:
 
     def __add_service_to_service_set(self, name: str, refPath: str, linked_id: str):
         """
-        service object in this function is an ExternalDataConnector referring to InstanceHierarchy: Services which
-        could be created in the same manifest or in a separate .aml file.
+        Service object in this function is an ExternalDataConnector referring to InstanceHierarchy: Services.
+
+        Args:
+            name (str): Name of the service.
+            refPath (str): Reference path for the service.
+            linked_id (str): ID linking to InstanceHierarchy: Services.
         """
         service = ET.SubElement(self.services_set, 'ExternalInterface')
         self.generate_attributes(service, name, self.random_id_generator(), refPath)
@@ -276,11 +299,13 @@ class MTPGenerator:
     @staticmethod
     def add_attr_to_instance(parent_elem: ET.Element, name: str, default_value: str, attr_id: str):
         """
-        add attrbutes of each data assembly to the corresponding instance
-        :param parent_elem: data assembly to which the attributes should be added
-        :param name: attribute name
-        :param default_value: default value of attribute
-        :param attr_id: each attribute has the same ID as the external interface of source list
+        Add attributes of each data assembly to the corresponding instance.
+
+        Args:
+            parent_elem (ET.Element): Data assembly to which the attributes should be added.
+            name (str): Attribute name.
+            default_value (str): Default value of the attribute.
+            attr_id (str): ID of the attribute, same as the external interface of source list.
         """
         attr = ET.SubElement(parent_elem, 'Attribute')
         attr.set('Name', name)
@@ -299,8 +324,10 @@ class MTPGenerator:
 
     def add_opcua_server(self, endpoint: str):
         """
-        add InternalElement opcua server to ModuleTypePackage/CommunicationSet/SourceList
-        :param endpoint: endpoint of opc ua server
+        Add InternalElement OPC UA server to ModuleTypePackage/CommunicationSet/SourceList.
+
+        Args:
+            endpoint (str): Endpoint of OPC UA server.
         """
         self.opcua_server = ET.SubElement(self.source_list, 'InternalElement')
         self.generate_attributes(self.opcua_server, 'OPCServer', self.random_id_generator(),
@@ -313,11 +340,13 @@ class MTPGenerator:
 
     def add_external_interface(self, opc_node_id: str, opc_ns: int, linked_attr_id: str, access=1):
         """
-        add opc ua node als ExternalInterface to ModuleTypePackage/CommunicationSet/SourceList/OPCUAServer
-        :param opc_node_id: opc ua node id
-        :param opc_ns: opc ua namespace
-        :param linked_attr_id: id connecting external interface and the corresponding attribute of data assembly
-        :param access: access level of each external element
+        Add OPC UA node as ExternalInterface to ModuleTypePackage/CommunicationSet/SourceList/OPCUAServer.
+
+        Args:
+            opc_node_id (str): OPC UA node ID.
+            opc_ns (int): OPC UA namespace.
+            linked_attr_id (str): ID connecting external interface and the corresponding attribute of data assembly.
+            access (int, optional): Access level of each external element. Defaults to 1.
         """
         node_identifier = opc_node_id
         node_name = opc_node_id.split('=')[-1]
@@ -362,8 +391,10 @@ class MTPGenerator:
 
     def add_supported_role_class(self, parent: ET.Element):
         """
-        add SupportedRoleClass to all InternalElement
-        :param parent: internal element
+        Add SupportedRoleClass to all InternalElement.
+
+        Args:
+            parent (ET.Element): Internal element.
         """
         for internal_element in parent.findall('InternalElement'):
             SupportedRoleClass = ET.SubElement(internal_element, 'SupportedRoleClass')
@@ -376,8 +407,10 @@ class MTPGenerator:
     @staticmethod
     def random_id_generator() -> str:
         """
-        # generate random id for different elements
-        :return: id which contains five parts
+        Generate random ID for different elements.
+
+        Returns:
+            str: ID which contains five parts.
         """
         # generate random id for different elements
         id1 = ''.join(random.sample(string.ascii_letters + string.digits, 4))
@@ -400,9 +433,11 @@ class MTPGenerator:
 
     def pretty_print(self, elem: ET.Element, level=0):
         """
-        add indents to exported .aml file
-        :param elem: root of the element tree
-        :param level: layer of the element tree, 0 represents the first layer (root)
+        Add indents to exported .aml file.
+
+        Args:
+            elem (ET.Element): Root of the element tree.
+            level (int): Layer of the element tree, 0 represents the first layer (root).
         """
         i = "\n" + level * "\t"
         if len(elem):

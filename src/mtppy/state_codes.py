@@ -1,9 +1,9 @@
 class StateCodes:
     def __init__(self):
         """
-        List of state codes as int and string.
+        Initializes the StateCodes class with state codes as integers and strings.
         """
-        #self.undefined = 1
+        # self.undefined = 1
         self.stopped = 4
         self.starting = 8
         self.idle = 16
@@ -22,7 +22,7 @@ class StateCodes:
         self.completed = 131072
 
         self.int_code = {}
-        #self.int_code[1] ='undefined'
+        # self.int_code[1] ='undefined'
         self.int_code[4] = 'stopped'
         self.int_code[8] = 'starting'
         self.int_code[16] = 'idle'
@@ -42,14 +42,18 @@ class StateCodes:
 
     def get_list_int(self):
         """
-        Gets a list of state as int.
-        :return: List of states.
+        Gets a list of state codes as integers.
+
+        Returns:
+            list: List of state codes as integers.
         """
         return list(self.int_code.keys())
 
     def get_list_str(self):
         """
-        Gets a list of state as string..
-        :return: List of states.
+        Gets a list of state codes as strings.
+
+        Returns:
+            list: List of state codes as strings.
         """
         return list(self.int_code.values())
