@@ -1,4 +1,6 @@
 import logging
+import time
+from threading import Event
 
 from abc import abstractmethod
 
@@ -17,6 +19,30 @@ StateCodes = StateCodes()
 
 
 class Service(SUCServiceControl):
+    """Represents a service of the PEA.
+
+    To create a new service, inherit from this class and implement at least the abstract methods. 
+    These include:
+    - starting
+    - execute
+    - completing
+
+    Other methods can be overridden as needed. 
+    By default the higher level methods (on the right side) will call the lower level methods.  
+    See the following diagram for how the methods are called:
+
+    +------------+      +------------+      +------------+      +------------+      +------------+
+    | completing |  <-  |  pausing   |  <-  |  holding   |  <-  |  stopping  |  <-  |  aborting  |
+    +------------+      +------------+      +------------+      +------------+      +------------+
+                        +------------+      +------------+      +------------+      +------------+
+                    ||  |   paused   |  <-  |    held    |  <-  |  stopped   |  <-  |  aborted   |
+                        +------------+      +------------+      +------------+      +------------+
+    +------------+      +------------+      +------------+      
+    |  starting  |  <-  |  resuming  |  <-  | unholding  |      
+    +------------+      +------------+      +------------+   
+
+    """
+
     def __init__(self, tag_name: str, tag_description: str):
         """
         Represents a service of the PEA.
@@ -27,7 +53,6 @@ class Service(SUCServiceControl):
         """
         super().__init__(tag_name, tag_description)
 
-        self.thread_ctrl = ThreadControl(service_name=tag_name)
         self.op_src_mode = OperationSourceMode()
 
         self.configuration_parameters = {}
@@ -38,6 +63,9 @@ class Service(SUCServiceControl):
         self.state_machine = StateMachine(operation_source_mode=self.op_src_mode,
                                           procedure_control=self.procedure_control,
                                           execution_routine=self.state_change_callback)
+
+        self.thread_ctrl = ThreadControl(service_name=tag_name,
+                                         state_change_function=self.state_change())
 
         self.op_src_mode.add_enter_offline_callback(self.state_machine.command_en_ctrl.disable_all)
 
@@ -80,12 +108,25 @@ class Service(SUCServiceControl):
         if state_str is self.state_machine.get_current_state_str():
             return True
         else:
+            # start the next thread if the state is not the current one
             self.thread_ctrl.reallocate_running_thread()
             return False
 
+    def get_state_stop_event(self) -> Event:
+        """
+        Returns an event that is set when the state should stop.
+
+        Returns:
+            Event: Event that is set when the state should stop.
+        """
+        if self.thread_ctrl.thread is None:
+            raise RuntimeError("Thread is not running.")
+
+        return self.thread_ctrl.thread.stop_event
+
     def state_change(self):
         """
-        Changes the state.
+        Changes the state. Has to be called by each transitional state method.
         """
         self.state_machine.state_change()
 
@@ -120,19 +161,23 @@ class Service(SUCServiceControl):
             self.procedure_control.attributes['ProcedureInt'].init_value = self.procedure_control.default_procedure_id
             self.procedure_control.attributes['ProcedureExt'].init_value = self.procedure_control.default_procedure_id
 
-    @abstractmethod
     def idle(self):
         """
         Idle state.
         """
-        pass
+        _logger.debug(f"{self.tag_name} - Idle -")
+        cycle = 0
+        while self.is_state("idle"):
+            _logger.debug(f"{self.tag_name} - Idle cycle {cycle}")
+            cycle += 1
+            time.sleep(3)
 
     @abstractmethod
     def starting(self):
         """
         Starting state.
         """
-        pass
+        self.state_change()
 
     @abstractmethod
     def execute(self):
@@ -146,88 +191,133 @@ class Service(SUCServiceControl):
         """
         Completing state.
         """
-        pass
+        self.state_change()
 
-    @abstractmethod
     def completed(self):
         """
         Completed state.
         """
-        pass
+        if self.state_machine.get_current_state_str() == "completed":
+            _logger.debug(f"{self.tag_name} - Completed -")
+        else:
+            pass
 
-    @abstractmethod
     def pausing(self):
         """
-        Pausing state.
+        Pausing state. If not overridden, it will call the completing method.
         """
-        pass
+        if self.state_machine.get_current_state_str() == "pausing":
+            _logger.debug(f"{self.tag_name} - Pausing -")
+        else:
+            pass
+        # call the completing method to also execute the logic for the completing state
+        self.completing()
 
-    @abstractmethod
     def paused(self):
         """
         Paused state.
         """
-        pass
+        if self.state_machine.get_current_state_str() == "paused":
+            _logger.debug(f"{self.tag_name} - Paused -")
+        else:
+            pass
 
-    @abstractmethod
     def resuming(self):
         """
-        Resuming state.
+        Resuming state. If not overridden, it will call the starting method.
         """
-        pass
+        if self.state_machine.get_current_state_str() == "resuming":
+            _logger.debug(f"{self.tag_name} - Resuming -")
+        else:
+            pass
+        # call the starting method to also execute the logic for the starting state
+        self.starting()
 
-    @abstractmethod
     def holding(self):
         """
-        Holding state.
+        Holding state. If not overridden, it will call the pausing method.
         """
-        pass
+        if self.state_machine.get_current_state_str() == "holding":
+            _logger.debug(f"{self.tag_name} - Holding -")
+        else:
+            pass
+        # call the pausing method to also execute the logic for the pausing state
+        self.pausing()
 
-    @abstractmethod
     def held(self):
         """
-        Held state.
+        Held state. If not overridden, it will call the paused method.
         """
-        pass
+        if self.state_machine.get_current_state_str() == "held":
+            _logger.debug(f"{self.tag_name} - Held -")
+        else:
+            pass
+        # call the paused method to also execute the logic for the paused state
+        self.paused()
 
-    @abstractmethod
     def unholding(self):
         """
-        Unholding state.
+        Unholding state. If not overridden, it will call the resuming method.
         """
-        pass
+        if self.state_machine.get_current_state_str() == "unholding":
+            _logger.debug(f"{self.tag_name} - Unholding -")
+        else:
+            pass
+        # call the resuming method to also execute the logic for the resuming state
+        self.resuming()
 
-    @abstractmethod
     def stopping(self):
         """
-        Stopping state.
+        Stopping state. If not overridden, it will call the holding method.
         """
-        pass
+        if self.state_machine.get_current_state_str() == "stopping":
+            _logger.debug(f"{self.tag_name} - Stopping -")
+        else:
+            pass
+        # call the holding method to also execute the logic for the holding state
+        self.holding()
 
-    @abstractmethod
     def stopped(self):
         """
-        Stopped state.
+        Stopped state. If not overridden, it will call the held method.
         """
-        pass
+        if self.state_machine.get_current_state_str() == "stopped":
+            _logger.debug(f"{self.tag_name} - Stopped -")
+        else:
+            pass
+        # call the held method to also execute the logic for the held state
+        self.held()
 
-    @abstractmethod
     def aborting(self):
         """
-        Aborting state.
+        Aborting state. If not overridden, it will call the stopping method.
         """
-        pass
+        if self.state_machine.get_current_state_str() == "aborting":
+            _logger.debug(f"{self.tag_name} - Aborting -")
+        else:
+            pass
+        # call the stopping method to also execute the logic for the stopping state
+        self.stopping()
 
-    @abstractmethod
     def aborted(self):
         """
-        Aborted state.
+        Aborted state. If not overridden, it will call the stopped method.
         """
-        pass
+        if self.state_machine.get_current_state_str() == "aborted":
+            _logger.debug(f"{self.tag_name} - Aborted -")
+        else:
+            pass
+        # call the stopped method to also execute the logic for the stopped state
+        self.stopped()
 
-    @abstractmethod
     def resetting(self):
         """
         Resetting state.
         """
-        pass
+        if self.state_machine.get_current_state_str() == "resetting":
+            _logger.debug(f"{self.tag_name} - Resetting -")
+        else:
+            pass
+        # Reset the state machine to idle
+        self.thread_ctrl.exception = None
+        self.state_change()

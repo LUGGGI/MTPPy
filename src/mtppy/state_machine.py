@@ -144,5 +144,11 @@ class StateMachine:
         self.execution_routine()
         _logger.debug(f'Service state changed to {new_state}')
 
-    def get_current_state_str(self):
+    def get_current_state_str(self) -> str:
+        """
+        Get the current state as a string.
+
+        Returns:
+            str: Current state as a string.
+        """
         return StateCodes.int_code[self.act_state]
