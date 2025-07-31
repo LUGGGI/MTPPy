@@ -68,6 +68,7 @@ class Service(SUCServiceControl):
                                          state_change_function=self.state_change())
 
         self.op_src_mode.add_enter_offline_callback(self.state_machine.command_en_ctrl.disable_all)
+        self.op_src_mode.add_enter_offline_callback(self.thread_ctrl.stop_thread)
 
         self.op_src_mode.add_exit_offline_callback(self.state_machine.command_en_ctrl.set_default)
         self.op_src_mode.add_exit_offline_callback(self.state_machine.update_command_en)
@@ -168,7 +169,7 @@ class Service(SUCServiceControl):
         """
         _logger.debug(f"{self.tag_name} - Idle -")
         cycle = 0
-        while self.is_state("idle"):
+        while self.is_state("idle") and not self.thread_ctrl.thread.stop_event.is_set():
             _logger.debug(f"{self.tag_name} - Idle cycle {cycle}")
             cycle += 1
             time.sleep(3)

@@ -54,10 +54,7 @@ class ThreadControl:
         """
         _logger.debug(f'Reallocate thread to state {self.requested_state}')
         if self.requested_state is not self.running_state:
-            # stop the current thread if it is running
-            if self.thread and self.thread.is_alive() and self.thread is not current_thread():
-                _logger.debug(f'Stopping thread {self.thread.name}')
-                self.thread.stop()
+            self.stop_thread(stop_if_current_thread=False)
 
             self.thread = StoppableThread(target=self.run_thread, args=(self.callback_function,),
                                           name=f"{self.service_name}_{self.requested_state}")
@@ -84,3 +81,15 @@ class ThreadControl:
         except Exception as e:
             self.exception = e
             self.exception_event.set()
+
+    def stop_thread(self, stop_if_current_thread: bool = True):
+        """
+        Stops the current thread if it is running.
+
+        Args:
+            stop_if_current_thread (bool): If True, stops the thread also if it is the current thread.   
+        """
+        if self.thread and self.thread.is_alive():
+            if stop_if_current_thread or self.thread is not current_thread():
+                _logger.debug(f'Stopping thread {self.thread.name}')
+                self.thread.stop()
