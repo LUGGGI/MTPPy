@@ -67,7 +67,16 @@ class StateMachine:
         else:
             _logger.debug(f'CommandEn permits to execute {cmd_str}')
 
+        # execute the command, if it is enabled will change the state thread to the requested state
         eval(f'self.{CommandCodes.int_code[com_var]}()')
+
+        # reset the command operation code
+        if self.op_src_mode.attributes['StateOpAct'].value:
+            self.attributes['CommandOp'].set_value(0)
+        elif self.op_src_mode.attributes['StateAutAct'].value and self.op_src_mode.attributes['SrcIntAct'].value:
+            self.attributes['CommandInt'].set_value(0)
+        elif self.op_src_mode.attributes['StateAutAct'].value and self.op_src_mode.attributes['SrcExtAct'].value:
+            self.attributes['CommandExt'].set_value(0)
 
     def start(self):
         if self.command_en_ctrl.is_enabled('start'):
