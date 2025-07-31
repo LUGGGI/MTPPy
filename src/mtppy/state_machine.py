@@ -149,9 +149,15 @@ class StateMachine:
         self.attributes['StateCur'].set_value(new_state)
         new_state_str = StateCodes.int_code[new_state]
         self.command_en_ctrl.execute(new_state_str)
-        self.attributes['CommandEn'].set_value(self.command_en_ctrl.get_command_en())
+        self.update_command_en()
         self.execution_routine()
         _logger.debug(f'Service state changed to {new_state}')
+
+    def update_command_en(self):
+        """
+        Updates the CommandEn attribute based on the current enabled flags.
+        """
+        self.attributes['CommandEn'].set_value(self.command_en_ctrl.get_command_en())
 
     def get_current_state_str(self) -> str:
         """
