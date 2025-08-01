@@ -1,5 +1,5 @@
-from MTPPy_Async.src.mtppy.procedure_control import ProcedureControl
-from MTPPy_Async.src.mtppy.procedure import Procedure
+from mtppy.procedure_control import ProcedureControl
+from mtppy.procedure import Procedure
 from test_operation_source_mode import init_op_source_mode
 
 
@@ -9,8 +9,7 @@ def init_procedure_control(op_mode='off', src_mode='int'):
                         1: Procedure(1, 'second', is_default=True),
                         2: Procedure(2, 'third'),
                         3: Procedure(3, 'forth')}
-    procedure_control = ProcedureControl(
-        procedures=dummy_procedures, service_op_src_mode=op_src_mode)
+    procedure_control = ProcedureControl(procedures=dummy_procedures, service_op_src_mode=op_src_mode)
     return procedure_control
 
 
@@ -45,28 +44,23 @@ def test_set_procedure_op():
 
 def test_set_procedure_int():
     procedure_control = init_procedure_control(op_mode='off', src_mode='ext')
-    check_valid_states(procedure_control, procedure_control.set_procedure_int,
-                       change_allowed=False)
+    check_valid_states(procedure_control, procedure_control.set_procedure_int, change_allowed=False)
     check_invalid_states(procedure_control, procedure_control.set_procedure_int)
 
     procedure_control = init_procedure_control(op_mode='off', src_mode='int')
-    check_valid_states(procedure_control, procedure_control.set_procedure_int,
-                       change_allowed=False)
+    check_valid_states(procedure_control, procedure_control.set_procedure_int, change_allowed=False)
     check_invalid_states(procedure_control, procedure_control.set_procedure_int)
 
     procedure_control = init_procedure_control(op_mode='op', src_mode='ext')
-    check_valid_states(procedure_control, procedure_control.set_procedure_int,
-                       change_allowed=False)
+    check_valid_states(procedure_control, procedure_control.set_procedure_int, change_allowed=False)
     check_invalid_states(procedure_control, procedure_control.set_procedure_int)
 
     procedure_control = init_procedure_control(op_mode='op', src_mode='int')
-    check_valid_states(procedure_control, procedure_control.set_procedure_int,
-                       change_allowed=False)
+    check_valid_states(procedure_control, procedure_control.set_procedure_int, change_allowed=False)
     check_invalid_states(procedure_control, procedure_control.set_procedure_int)
 
     procedure_control = init_procedure_control(op_mode='aut', src_mode='ext')
-    check_valid_states(procedure_control, procedure_control.set_procedure_int,
-                       change_allowed=False)
+    check_valid_states(procedure_control, procedure_control.set_procedure_int, change_allowed=False)
     check_invalid_states(procedure_control, procedure_control.set_procedure_int)
 
     procedure_control = init_procedure_control(op_mode='aut', src_mode='int')
@@ -76,23 +70,19 @@ def test_set_procedure_int():
 
 def test_set_procedure_ext():
     procedure_control = init_procedure_control(op_mode='off', src_mode='ext')
-    check_valid_states(procedure_control, procedure_control.set_procedure_ext,
-                       change_allowed=False)
+    check_valid_states(procedure_control, procedure_control.set_procedure_ext, change_allowed=False)
     check_invalid_states(procedure_control, procedure_control.set_procedure_ext)
 
     procedure_control = init_procedure_control(op_mode='off', src_mode='int')
-    check_valid_states(procedure_control, procedure_control.set_procedure_ext,
-                       change_allowed=False)
+    check_valid_states(procedure_control, procedure_control.set_procedure_ext, change_allowed=False)
     check_invalid_states(procedure_control, procedure_control.set_procedure_ext)
 
     procedure_control = init_procedure_control(op_mode='op', src_mode='ext')
-    check_valid_states(procedure_control, procedure_control.set_procedure_ext,
-                       change_allowed=False)
+    check_valid_states(procedure_control, procedure_control.set_procedure_ext, change_allowed=False)
     check_invalid_states(procedure_control, procedure_control.set_procedure_ext)
 
     procedure_control = init_procedure_control(op_mode='op', src_mode='int')
-    check_valid_states(procedure_control, procedure_control.set_procedure_ext,
-                       change_allowed=False)
+    check_valid_states(procedure_control, procedure_control.set_procedure_ext, change_allowed=False)
     check_invalid_states(procedure_control, procedure_control.set_procedure_ext)
 
     procedure_control = init_procedure_control(op_mode='aut', src_mode='ext')
@@ -100,8 +90,7 @@ def test_set_procedure_ext():
     check_invalid_states(procedure_control, procedure_control.set_procedure_ext)
 
     procedure_control = init_procedure_control(op_mode='aut', src_mode='int')
-    check_valid_states(procedure_control, procedure_control.set_procedure_ext,
-                       change_allowed=False)
+    check_valid_states(procedure_control, procedure_control.set_procedure_ext, change_allowed=False)
     check_invalid_states(procedure_control, procedure_control.set_procedure_ext)
 
 
@@ -117,3 +106,4 @@ def test_set_procedure_cur():
     procedure_control.set_procedure_op(10)
     procedure_control.set_procedure_cur()
     assert procedure_control.attributes['ProcedureCur'].value == 0
+    

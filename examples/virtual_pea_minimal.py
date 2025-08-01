@@ -1,10 +1,10 @@
-from MTPPy_Async.src.mtppy.opcua_server_pea import OPCUAServerPEA
-from MTPPy_Async.src.mtppy.mtp_generator import MTPGenerator
-from MTPPy_Async.src.mtppy.service import Service
-from MTPPy_Async.src.mtppy.procedure import Procedure
-from MTPPy_Async.src.mtppy.operation_elements import *
-from MTPPy_Async.src.mtppy.indicator_elements import *
-from MTPPy_Async.src.mtppy.active_elements import *
+from mtppy.opcua_server_pea import OPCUAServerPEA
+from mtppy.mtp_generator import MTPGenerator
+from mtppy.service import Service
+from mtppy.procedure import Procedure
+from mtppy.operation_elements import *
+from mtppy.indicator_elements import *
+from mtppy.active_elements import *
 
 import time
 import random
@@ -137,44 +137,32 @@ if __name__ == '__main__':
     opcua_server = module.get_opcua_server()
     opcua_ns = module.get_opcua_ns()
     time.sleep(1)
-    input('Press Enter to continue...')
 
     print('--- Set procedure parameters to Operator mode ---')
-    opcua_server.get_node(
-        'ns=3;s=services.rand_num_gen.procedures.cont.procedure_parameters.lower_bound.op_src_mode.StateOpOp').set_value(True)
-    opcua_server.get_node(
-        'ns=3;s=services.rand_num_gen.procedures.cont.procedure_parameters.upper_bound.op_src_mode.StateOpOp').set_value(True)
+    opcua_server.get_node('ns=3;s=services.rand_num_gen.procedures.cont.procedure_parameters.lower_bound.op_src_mode.StateOpOp').set_value(True)
+    opcua_server.get_node('ns=3;s=services.rand_num_gen.procedures.cont.procedure_parameters.upper_bound.op_src_mode.StateOpOp').set_value(True)
     time.sleep(1)
-    input('Press Enter to continue...')
 
     print('--- Set procedure parameter values ---')
-    opcua_server.get_node(
-        'ns=3;s=services.rand_num_gen.procedures.cont.procedure_parameters.lower_bound.VOp').set_value(40)
-    opcua_server.get_node(
-        'ns=3;s=services.rand_num_gen.procedures.cont.procedure_parameters.upper_bound.VOp').set_value(60)
+    opcua_server.get_node('ns=3;s=services.rand_num_gen.procedures.cont.procedure_parameters.lower_bound.VOp').set_value(40)
+    opcua_server.get_node('ns=3;s=services.rand_num_gen.procedures.cont.procedure_parameters.upper_bound.VOp').set_value(60)
     time.sleep(1)
-    input('Press Enter to continue...')
 
     print('--- Set service to Operator mode ---')
     opcua_server.get_node('ns=3;s=services.rand_num_gen.op_src_mode.StateOpOp').set_value(True)
     time.sleep(1)
-    input('Press Enter to continue...')
 
     print('--- Start service ---')
     opcua_server.get_node('ns=3;s=services.rand_num_gen.state_machine.CommandOp').set_value(4)
     time.sleep(10)
-    input('Press Enter to continue...')
 
     print('--- Complete service ---')
     opcua_server.get_node('ns=3;s=services.rand_num_gen.state_machine.CommandOp').set_value(1024)
     time.sleep(1)
-    input('Press Enter to continue...')
 
     print('--- Reset service ---')
     opcua_server.get_node('ns=3;s=services.rand_num_gen.state_machine.CommandOp').set_value(2)
-    input('Press Enter to continue...')
 
     print('--- Set service dummy to Offline mode ---')
     opcua_server.get_node('ns=3;s=services.rand_num_gen.op_src_mode.StateOffOp').set_value(True)
     time.sleep(1)
-    input('Press Enter to continue...')

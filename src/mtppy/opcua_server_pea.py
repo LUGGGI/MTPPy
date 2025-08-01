@@ -1,15 +1,15 @@
 import logging
 from opcua import Server, ua
-from MTPPy_Async.src.mtppy.communication_object import OPCUACommunicationObject
-from MTPPy_Async.src.mtppy.service import Service
-from MTPPy_Async.src.mtppy.suc_data_assembly import SUCDataAssembly, SUCActiveElement
-from MTPPy_Async.src.mtppy.mtp_generator import MTPGenerator
+from mtppy.communication_object import OPCUACommunicationObject
+from mtppy.service import Service
+from mtppy.suc_data_assembly import SUCDataAssembly, SUCActiveElement
+from mtppy.mtp_generator import MTPGenerator
 
 _logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
 
 
 class OPCUAServerPEA:
-    def __init__(self, mtp_generator: MTPGenerator = None, endpoint: str = 'opc.tcp://127.0.0.1:4840/'):
+    def __init__(self, mtp_generator: MTPGenerator = None, endpoint: str ='opc.tcp://127.0.0.1:4840/'):
         """
         Defines an OPC UA server for PEA.
 
@@ -139,7 +139,7 @@ class OPCUAServerPEA:
         # type of data assembly (e.g. services, active_elements, procedures etc.)
         da_type = parent_opcua_prefix.split('=')[-1].split('.')[-1]
 
-        folders = ['configuration_parameters', 'procedures', 'procedure_parameters',
+        folders = ['configuration_parameters', 'procedures','procedure_parameters',
                    'process_value_ins', 'report_values', 'process_value_outs']
         leaves = ['op_src_mode', 'state_machine', 'procedure_control']
 
@@ -167,11 +167,9 @@ class OPCUAServerPEA:
             section_node = da_node.add_folder(section_node_id, section_name)
             if section_name in folders:
                 for parameter in eval(f'data_assembly.{section_name}.values()'):
-                    self._create_opcua_objects_for_folders(
-                        parameter, section_node_id, section_node)
+                    self._create_opcua_objects_for_folders(parameter, section_node_id, section_node)
             if section_name in leaves:
-                self._create_opcua_objects_for_leaves(
-                    section, section_node_id, section_node, instance)
+                self._create_opcua_objects_for_leaves(section, section_node_id, section_node, instance)
 
         # create linked obj between instance and service component
         if self.mtp:
@@ -219,8 +217,7 @@ class OPCUAServerPEA:
                 pass
             else:
                 if self.mtp:
-                    self.mtp.add_attr_to_instance(
-                        par_instance, attr.name, attr.init_value, linked_id)
+                    self.mtp.add_attr_to_instance(par_instance, attr.name, attr.init_value, linked_id)
 
             # We subscribe to nodes that are writable attributes
             if attr.sub_cb is not None:

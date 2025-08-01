@@ -1,5 +1,5 @@
 import pytest
-from MTPPy_Async.src.mtppy.active_elements import MonBinDrv
+from mtppy.active_elements import MonBinDrv
 import time
 
 
@@ -59,23 +59,19 @@ def test_static_error():
             eval(f'mon_bin_drv.{set_command}({command})')
             print(f'Scenario: mode {op_mode} {src_mode}, {set_command}')
 
-            # FwdFbk becomes to True without any control signals
-            mon_bin_drv.attributes['FwdFbk'].set_value(True)
+            mon_bin_drv.attributes['FwdFbk'].set_value(True)  # FwdFbk becomes to True without any control signals
             time.sleep(0.6)
 
             assert mon_bin_drv.attributes['MonStatErr'].value == True
             assert mon_bin_drv.attributes['SafePosAct'].value == True
-            # safe position is clockwise rotation
-            assert mon_bin_drv.attributes['FwdFbk'].value == True
+            assert mon_bin_drv.attributes['FwdFbk'].value == True  # safe position is clockwise rotation
 
-            # FwdFbk becomes to True without any control signals
-            mon_bin_drv.attributes['FwdFbk'].set_value(False)
+            mon_bin_drv.attributes['FwdFbk'].set_value(False)  # FwdFbk becomes to True without any control signals
             time.sleep(0.6)
 
             assert mon_bin_drv.attributes['MonStatErr'].value == True
             assert mon_bin_drv.attributes['SafePosAct'].value == True
-            # safe position is clockwise rotation
-            assert mon_bin_drv.attributes['FwdFbk'].value == True
+            assert mon_bin_drv.attributes['FwdFbk'].value == True  # safe position is clockwise rotation
 
             mon_bin_drv.set_stop_monitor()
             mon_bin_drv.monitor_static_thread.join()
@@ -129,8 +125,7 @@ def test_dynamic_error_fwd_stop():
         assert mon_bin_drv.attributes['MonDynErr'].value == True
         assert mon_bin_drv.attributes['MonStatErr'].value == False
         assert mon_bin_drv.attributes['SafePosAct'].value == True
-        # safe position is clockwise rotation
-        assert mon_bin_drv.attributes['FwdFbk'].value == True
+        assert mon_bin_drv.attributes['FwdFbk'].value == True  # safe position is clockwise rotation
 
         eval(f'mon_bin_drv.{stop_command}(True)')
         print(f'Scenario: mode {op_mode} {src_mode}, {stop_command}')
@@ -142,8 +137,7 @@ def test_dynamic_error_fwd_stop():
         assert mon_bin_drv.attributes['MonDynErr'].value == True
         assert mon_bin_drv.attributes['MonStatErr'].value == False
         assert mon_bin_drv.attributes['SafePosAct'].value == True
-        # safe position is clockwise rotation
-        assert mon_bin_drv.attributes['FwdFbk'].value == True
+        assert mon_bin_drv.attributes['FwdFbk'].value == True  # safe position is clockwise rotation
 
         mon_bin_drv.set_stop_monitor()
         mon_bin_drv.monitor_static_thread.join()
@@ -171,8 +165,7 @@ def test_dynamic_error_rev_stop():
         assert mon_bin_drv.attributes['MonDynErr'].value == True
         assert mon_bin_drv.attributes['MonStatErr'].value == False
         assert mon_bin_drv.attributes['SafePosAct'].value == True
-        # safe position is clockwise rotation
-        assert mon_bin_drv.attributes['FwdFbk'].value == True
+        assert mon_bin_drv.attributes['FwdFbk'].value == True  # safe position is clockwise rotation
 
         eval(f'mon_bin_drv.{stop_command}(True)')
         print(f'Scenario: mode {op_mode} {src_mode}, {stop_command}')
@@ -184,8 +177,7 @@ def test_dynamic_error_rev_stop():
         assert mon_bin_drv.attributes['MonDynErr'].value == True
         assert mon_bin_drv.attributes['MonStatErr'].value == False
         assert mon_bin_drv.attributes['SafePosAct'].value == True
-        # safe position is clockwise rotation
-        assert mon_bin_drv.attributes['FwdFbk'].value == True
+        assert mon_bin_drv.attributes['FwdFbk'].value == True  # safe position is clockwise rotation
 
         mon_bin_drv.set_stop_monitor()
         mon_bin_drv.monitor_static_thread.join()

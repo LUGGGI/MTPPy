@@ -1,6 +1,6 @@
 import logging
 
-from MTPPy_Async.src.mtppy.suc_data_assembly import *
+from mtppy.suc_data_assembly import *
 
 _logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
 

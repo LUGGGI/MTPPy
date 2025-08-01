@@ -4,12 +4,12 @@ With these two functions, service and its sub-components (e.g. config param, pro
 added to InstanceHierarchy services
 """
 import pytest
-from MTPPy_Async.src.mtppy.mtp_generator import MTPGenerator
-from MTPPy_Async.src.mtppy.service import Service
-from MTPPy_Async.src.mtppy.procedure import Procedure
-from MTPPy_Async.src.mtppy.operation_elements import *
-from MTPPy_Async.src.mtppy.indicator_elements import *
-from MTPPy_Async.src.mtppy.active_elements import *
+from mtppy.mtp_generator import MTPGenerator
+from mtppy.service import Service
+from mtppy.procedure import Procedure
+from mtppy.operation_elements import *
+from mtppy.indicator_elements import *
+from mtppy.active_elements import *
 
 # basic infos needed to initiate mtp_generator
 writer_info_dict = {'WriterName': 'tud/plt', 'WriterID': 'tud/plt', 'WriterVendor': 'tud',
@@ -29,8 +29,7 @@ procedure_report_value = BinView('proc_rv_bin', v_state_0='state_0', v_state_1='
 procedure_process_value_out = BinView('process_value_out')
 
 # test obj: procedure parameter
-procedure_param = DIntServParam('proc_param_dint', v_min=-10, v_max=10,
-                                v_scl_min=0, v_scl_max=-10, v_unit=23)
+procedure_param = DIntServParam('proc_param_dint', v_min=-10, v_max=10, v_scl_min=0, v_scl_max=-10, v_unit=23)
 
 # test obj: procedure
 procedure = Procedure(0, 'cont', is_self_completing=False, is_default=True)
@@ -39,8 +38,7 @@ procedure.add_procedure_value_out(procedure_process_value_out)
 procedure.add_procedure_parameter(procedure_param)
 
 # test obj: service config parameter
-serv_parameters = AnaServParam('serv_param_ana', v_min=0, v_max=50,
-                               v_scl_min=0, v_scl_max=10, v_unit=23)
+serv_parameters = AnaServParam('serv_param_ana', v_min=0, v_max=50, v_scl_min=0, v_scl_max=10, v_unit=23)
 
 
 # test obj: service
@@ -104,8 +102,7 @@ service1 = ServiceObject('service_test1', '')
 
 class TestInstanceHierarchyServices(object):  # test some functions of mtp generator
     def setup_class(self):
-        self.mtp_generator = MTPGenerator(
-            writer_info_dict, export_manifest_path, manifest_template_path)
+        self.mtp_generator = MTPGenerator(writer_info_dict, export_manifest_path, manifest_template_path)
 
     def test_add_service_to_InstanceHierarchy(self):
         """
@@ -114,29 +111,24 @@ class TestInstanceHierarchyServices(object):  # test some functions of mtp gener
         self.mtp_generator.create_components_for_services(service1, 'services')
         # test, if two InternalElements are added to InstanceHierarchy Services
         # the name of these two InternalElements should correspond the service name
-        service_name = self.mtp_generator.instance_hierarchy_service.find(
-            'InternalElement').get('Name')
+        service_name = self.mtp_generator.instance_hierarchy_service.find('InternalElement').get('Name')
         assert service_name == 'service_test1'
 
     def test_add_components_to_service(self):
-        self.mtp_generator.create_components_for_services(
-            serv_parameters, 'configuration_parameters')
+        self.mtp_generator.create_components_for_services(serv_parameters, 'configuration_parameters')
         self.mtp_generator.create_components_for_services(procedure, 'procedures')
 
         # InternalElement service should only have two sub-InternalElements config param and procedure
-        service_sub_elements = self.mtp_generator.instance_hierarchy_service.find(
-            'InternalElement')
+        service_sub_elements = self.mtp_generator.instance_hierarchy_service.find('InternalElement')
         assert len(service_sub_elements.findall('InternalElement')) == 2
 
     def test_add_components_to_procedure(self):
         self.mtp_generator.create_components_for_services(procedure_param, 'procedure_parameters')
         self.mtp_generator.create_components_for_services(procedure_report_value, 'report_values')
-        self.mtp_generator.create_components_for_services(
-            procedure_process_value_out, 'process_value_outs')
+        self.mtp_generator.create_components_for_services(procedure_process_value_out, 'process_value_outs')
 
         # in this test case, a procedure should have one report value, one value out and one procedure parameter
-        procedure_ie = self.mtp_generator.instance_hierarchy_service.findall(
-            'InternalElement/InternalElement')[1]
+        procedure_ie = self.mtp_generator.instance_hierarchy_service.findall('InternalElement/InternalElement')[1]
         assert len(procedure_ie.findall('InternalElement')) == 3
 
         pro_parameters = procedure_ie.findall('InternalElement')[0]

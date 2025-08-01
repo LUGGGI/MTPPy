@@ -1,5 +1,5 @@
 import pytest
-from MTPPy_Async.src.mtppy.active_elements import MonBinVlv
+from mtppy.active_elements import MonBinVlv
 import time
 
 
@@ -65,8 +65,7 @@ def test_static_error():
             assert mon_bin_vlv.attributes['MonStatErr'].value == True
             assert mon_bin_vlv.attributes['MonDynErr'].value == False
             assert mon_bin_vlv.attributes['SafePosAct'].value == True
-            # safe position of valve is open
-            assert mon_bin_vlv.attributes['OpenFbk'].value == True
+            assert mon_bin_vlv.attributes['OpenFbk'].value == True  # safe position of valve is open
 
             time.sleep(0.5)
 
@@ -77,8 +76,7 @@ def test_static_error():
             assert mon_bin_vlv.attributes['MonStatErr'].value == True
             assert mon_bin_vlv.attributes['MonDynErr'].value == False
             assert mon_bin_vlv.attributes['SafePosAct'].value == True
-            # safe position of valve is open
-            assert mon_bin_vlv.attributes['OpenFbk'].value == True
+            assert mon_bin_vlv.attributes['OpenFbk'].value == True  # safe position of valve is open
 
             mon_bin_vlv.set_stop_monitor()
             mon_bin_vlv.monitor_static_thread.join()

@@ -1,4 +1,4 @@
-from MTPPy_Async.src.mtppy.attribute import Attribute
+from mtppy.attribute import Attribute
 
 
 class SUCDataAssembly:

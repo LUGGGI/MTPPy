@@ -3,12 +3,12 @@ test functions create_instance, add_data_assembly_to_InstanceLis, add_attr_to_in
 With these functions, data assembly and it´s attributes can be added under InstanceList and SourceList/OPCServer
 """
 import pytest
-from MTPPy_Async.src.mtppy.mtp_generator import MTPGenerator
-from MTPPy_Async.src.mtppy.service import Service
-from MTPPy_Async.src.mtppy.procedure import Procedure
-from MTPPy_Async.src.mtppy.operation_elements import *
-from MTPPy_Async.src.mtppy.indicator_elements import *
-from MTPPy_Async.src.mtppy.active_elements import *
+from mtppy.mtp_generator import MTPGenerator
+from mtppy.service import Service
+from mtppy.procedure import Procedure
+from mtppy.operation_elements import *
+from mtppy.indicator_elements import *
+from mtppy.active_elements import *
 import xml.etree.ElementTree as ET
 
 
@@ -102,8 +102,7 @@ service = Service1('service_test', '')
 
 class TestMTPInstanceList(object):  # test some functions of mtp generator
     def setup_class(self):
-        self.mtp_generator = MTPGenerator(
-            writer_info_dict, export_manifest_path, manifest_template_path)
+        self.mtp_generator = MTPGenerator(writer_info_dict, export_manifest_path, manifest_template_path)
         self.mtp_generator.add_module_type_package('1.0', 'mtp_test', '')
         self.module_type_package = self.mtp_generator.module_type_package
         endpoint = '127.0.0.0'
@@ -117,8 +116,7 @@ class TestMTPInstanceList(object):  # test some functions of mtp generator
         report_value = self.mtp_generator.instance_list.findall('InternalElement')[0]
 
         # whether type and name of the report value obj are correct
-        assert report_value.get(
-            'RefBaseSystemUnitPath') == 'MTPDataObjectSUCLib/DataAssembly/IndicatorElement/AnaView'
+        assert report_value.get('RefBaseSystemUnitPath') == 'MTPDataObjectSUCLib/DataAssembly/IndicatorElement/AnaView'
         assert report_value.get('Name') == 'services.rand_num_gen.procedures.cont.report_values'
 
         # initiate InstanceList for other tests
@@ -132,8 +130,7 @@ class TestMTPInstanceList(object):  # test some functions of mtp generator
         value_out = self.mtp_generator.instance_list.findall('InternalElement')[0]
 
         # whether type and name of the value out obj are correct
-        assert value_out.get(
-            'RefBaseSystemUnitPath') == 'MTPDataObjectSUCLib/DataAssembly/IndicatorElement/BinView'
+        assert value_out.get('RefBaseSystemUnitPath') == 'MTPDataObjectSUCLib/DataAssembly/IndicatorElement/BinView'
         assert value_out.get('Name') == 'services.rand_num_gen.procedures.cont.process_value_outs'
 
         # initiate InstanceList for other tests
@@ -152,8 +149,7 @@ class TestMTPInstanceList(object):  # test some functions of mtp generator
         node_id = 'ns=3;s=services.rand_num_gen.procedures'
         self.mtp_generator.create_instance(procedure, node_id)
         proc = self.mtp_generator.instance_list.findall('InternalElement')[0]
-        assert proc.get(
-            'RefBaseSystemUnitPath') == 'MTPDataObjectSUCLib/DataAssembly/DiagnosticElement/HealthStateView'
+        assert proc.get('RefBaseSystemUnitPath') == 'MTPDataObjectSUCLib/DataAssembly/DiagnosticElement/HealthStateView'
         assert proc.get('Name') == 'services.rand_num_gen.procedures.HealthStateView'
 
         # add report value
@@ -161,8 +157,7 @@ class TestMTPInstanceList(object):  # test some functions of mtp generator
         for report_values in procedure.report_values.values():
             self.mtp_generator.create_instance(report_values, node_id_rv)
         rv = self.mtp_generator.instance_list.findall('InternalElement')[1]
-        assert rv.get(
-            'RefBaseSystemUnitPath') == 'MTPDataObjectSUCLib/DataAssembly/IndicatorElement/AnaView'
+        assert rv.get('RefBaseSystemUnitPath') == 'MTPDataObjectSUCLib/DataAssembly/IndicatorElement/AnaView'
         assert rv.get('Name') == 'services.rand_num_gen.procedures.cont.report_values'
 
         # initiate InstanceList for other tests
@@ -175,8 +170,7 @@ class TestMTPInstanceList(object):  # test some functions of mtp generator
         node_id = 'ns=3;s=services'
         self.mtp_generator.create_instance(service, node_id)
         serv = self.mtp_generator.instance_list.findall('InternalElement')[0]
-        assert serv.get(
-            'RefBaseSystemUnitPath') == 'MTPDataObjectSUCLib/DataAssembly/ServiceControl'
+        assert serv.get('RefBaseSystemUnitPath') == 'MTPDataObjectSUCLib/DataAssembly/ServiceControl'
         assert serv.get('Name') == 'services.ServiceControl'
 
         # add config para
@@ -197,8 +191,7 @@ class TestMTPInstanceList(object):  # test some functions of mtp generator
         node_id = 'ns=3;s=active_elements.pid_ctrl'
         self.mtp_generator.create_instance(pid_ctrl, node_id)
         active_element = self.mtp_generator.instance_list.findall('InternalElement')[0]
-        assert active_element.get(
-            'RefBaseSystemUnitPath') == 'MTPDataObjectSUCLib/DataAssembly/ActiveElement/PIDCtrl'
+        assert active_element.get('RefBaseSystemUnitPath') == 'MTPDataObjectSUCLib/DataAssembly/ActiveElement/PIDCtrl'
         assert active_element.get('Name') == 'active_elements.pid_ctrl'
 
         # initiate InstanceList for other tests
@@ -209,8 +202,7 @@ class TestMTPInstanceList(object):  # test some functions of mtp generator
         node_id = 'ns=3;s=active_elements.analogue_drive'
         self.mtp_generator.create_instance(analogue_drive, node_id)
         act = self.mtp_generator.instance_list.findall('InternalElement')[0]
-        assert act.get(
-            'RefBaseSystemUnitPath') == 'MTPDataObjectSUCLib/DataAssembly/ActiveElement/AnaDrv'
+        assert act.get('RefBaseSystemUnitPath') == 'MTPDataObjectSUCLib/DataAssembly/ActiveElement/AnaDrv'
         assert act.get('Name') == 'active_elements.analogue_drive'
 
         # initiate InstanceList for other tests
@@ -241,8 +233,7 @@ class TestMTPInstanceList(object):  # test some functions of mtp generator
         assert len(self.mtp_generator.opcua_server.findall(".//ExternalInterface")) == 28
 
         # each ExternalInterface has three attributes
-        assert len(self.mtp_generator.opcua_server.findall(
-            ".//ExternalInterface")[0].findall('Attribute')) == 3
+        assert len(self.mtp_generator.opcua_server.findall(".//ExternalInterface")[0].findall('Attribute')) == 3
 
         # check, if ExternalInterface is connected to attribute of Instance
         linked_id_ei = self.mtp_generator.opcua_server.findall(".//ExternalInterface")[2].get('ID')

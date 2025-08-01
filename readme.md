@@ -75,10 +75,10 @@ After definition of the service set, the MTP file can be generated and the insta
 
 ### Service definition
 ```python
-from MTPPy_Async.src.mtppy.service import Service
-from MTPPy_Async.src.mtppy.procedure import Procedure
-from MTPPy_Async.src.mtppy.operation_elements import *
-from MTPPy_Async.src.mtppy.indicator_elements import *
+from mtppy.service import Service
+from mtppy.procedure import Procedure
+from mtppy.operation_elements import *
+from mtppy.indicator_elements import *
 
 class RandomNumberGenerator(Service):
     def __init__(self, tag_name, tag_description):
@@ -181,8 +181,8 @@ In additional, active elemements that are service-independent should be defined 
 ### PEA definition
 Now, the service with its procedure can be added to the PEA instance.
 ```python
-from MTPPy_Async.src.mtppy.opcua_server_pea import OPCUAServerPEA
-from MTPPy_Async.src.mtppy.active_elements import PIDCtrl
+from mtppy.opcua_server_pea import OPCUAServerPEA
+from mtppy.active_elements import PIDCtrl
 
 module = OPCUAServerPEA()
 
@@ -203,7 +203,7 @@ The last line will start the OPC UA server.
 ### MTP generation
 To generate an MTP manifest, instantiate an MTP generator.
 ```python
-from MTPPy_Async.src.mtppy.mtp_generator import MTPGenerator
+from mtppy.mtp_generator import MTPGenerator
 
 writer_info_dict = {'WriterName': 'tud/plt', 'WriterID': 'tud/plt', 'WriterVendor': 'tud',
                         'WriterVendorURL': 'www.tud.de',

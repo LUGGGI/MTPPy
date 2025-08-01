@@ -1,5 +1,5 @@
 import pytest
-from MTPPy_Async.src.mtppy.active_elements import BinVlv
+from mtppy.active_elements import BinVlv
 
 
 def init_bin_vlv(op_mode='off', src_mode='int', open_fbk_calc=True, close_fbk_calc=True, safe_pos=0, safe_pos_en=True,

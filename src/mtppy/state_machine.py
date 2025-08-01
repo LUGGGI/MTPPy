@@ -1,11 +1,11 @@
 import logging
 
-from MTPPy_Async.src.mtppy.attribute import Attribute
-from MTPPy_Async.src.mtppy.state_codes import StateCodes
-from MTPPy_Async.src.mtppy.command_codes import CommandCodes
-from MTPPy_Async.src.mtppy.command_en_control import CommandEnControl
-from MTPPy_Async.src.mtppy.operation_source_mode import OperationSourceMode
-from MTPPy_Async.src.mtppy.procedure_control import ProcedureControl
+from mtppy.attribute import Attribute
+from mtppy.state_codes import StateCodes
+from mtppy.command_codes import CommandCodes
+from mtppy.command_en_control import CommandEnControl
+from mtppy.operation_source_mode import OperationSourceMode
+from mtppy.procedure_control import ProcedureControl
 StateCodes = StateCodes()
 CommandCodes = CommandCodes()
 

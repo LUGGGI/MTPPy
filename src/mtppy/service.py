@@ -4,14 +4,14 @@ from threading import Event
 
 from abc import abstractmethod
 
-from MTPPy_Async.src.mtppy.suc_data_assembly import SUCServiceControl
-from MTPPy_Async.src.mtppy.thread_control import ThreadControl
-from MTPPy_Async.src.mtppy.operation_source_mode import OperationSourceMode
-from MTPPy_Async.src.mtppy.state_machine import StateMachine
-from MTPPy_Async.src.mtppy.procedure_control import ProcedureControl
-from MTPPy_Async.src.mtppy.state_codes import StateCodes
-from MTPPy_Async.src.mtppy.procedure import Procedure
-from MTPPy_Async.src.mtppy.suc_data_assembly import SUCOperationElement
+from mtppy.suc_data_assembly import SUCServiceControl
+from mtppy.thread_control import ThreadControl
+from mtppy.operation_source_mode import OperationSourceMode
+from mtppy.state_machine import StateMachine
+from mtppy.procedure_control import ProcedureControl
+from mtppy.state_codes import StateCodes
+from mtppy.procedure import Procedure
+from mtppy.suc_data_assembly import SUCOperationElement
 
 _logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
 

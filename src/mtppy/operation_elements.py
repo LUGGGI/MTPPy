@@ -1,8 +1,8 @@
 import logging
 
-from MTPPy_Async.src.mtppy.attribute import Attribute
-from MTPPy_Async.src.mtppy.operation_source_mode import OperationSourceMode
-from MTPPy_Async.src.mtppy.suc_data_assembly import SUCOperationElement
+from mtppy.attribute import Attribute
+from mtppy.operation_source_mode import OperationSourceMode
+from mtppy.suc_data_assembly import SUCOperationElement
 
 _logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
 

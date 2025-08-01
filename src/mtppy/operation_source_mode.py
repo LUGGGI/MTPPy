@@ -1,6 +1,6 @@
 import logging
 
-from MTPPy_Async.src.mtppy.attribute import Attribute
+from mtppy.attribute import Attribute
 
 _logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
 

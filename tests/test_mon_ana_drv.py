@@ -1,5 +1,5 @@
 import pytest
-from MTPPy_Async.src.mtppy.active_elements import MonAnaDrv
+from mtppy.active_elements import MonAnaDrv
 import time
 
 
@@ -56,30 +56,25 @@ test_scenario_no_control_signals = [('off', 'int', 'set_fwd_op'),
 def test_static_error():
     for op_mode, src_mode, set_command in test_scenario_no_control_signals:
         for command in [True, False]:
-            mon_ana_drv = init_mon_ana_drv(
-                op_mode=op_mode, src_mode=src_mode, rmp_ah_en=False, rmp_al_en=False)
+            mon_ana_drv = init_mon_ana_drv(op_mode=op_mode, src_mode=src_mode, rmp_ah_en=False, rmp_al_en=False)
 
             mon_ana_drv.start_monitor()
             eval(f'mon_ana_drv.{set_command}({command})')
             print(f'Scenario: mode {op_mode} {src_mode}, {set_command}')
 
-            # FwdFbk becomes to True without any control signals
-            mon_ana_drv.attributes['FwdFbk'].set_value(True)
+            mon_ana_drv.attributes['FwdFbk'].set_value(True)  # FwdFbk becomes to True without any control signals
             time.sleep(0.6)
 
             assert mon_ana_drv.attributes['MonStatErr'].value == True
             assert mon_ana_drv.attributes['SafePosAct'].value == True
-            # safe position is clockwise rotation
-            assert mon_ana_drv.attributes['FwdFbk'].value == True
+            assert mon_ana_drv.attributes['FwdFbk'].value == True  # safe position is clockwise rotation
 
-            # FwdFbk becomes to True without any control signals
-            mon_ana_drv.attributes['FwdFbk'].set_value(False)
+            mon_ana_drv.attributes['FwdFbk'].set_value(False)  # FwdFbk becomes to True without any control signals
             time.sleep(0.6)
 
             assert mon_ana_drv.attributes['MonStatErr'].value == True
             assert mon_ana_drv.attributes['SafePosAct'].value == True
-            # safe position is clockwise rotation
-            assert mon_ana_drv.attributes['FwdFbk'].value == True
+            assert mon_ana_drv.attributes['FwdFbk'].value == True  # safe position is clockwise rotation
 
             mon_ana_drv.set_stop_monitor()
             mon_ana_drv.monitor_static_thread.join()
@@ -93,8 +88,7 @@ def test_static_error_within_monitor_time():
 
     for op_mode, src_mode, set_command in test_scenario_no_control_signals:
         for command in [True, False]:
-            mon_ana_drv = init_mon_ana_drv(
-                op_mode=op_mode, src_mode=src_mode, rmp_ah_en=False, rmp_al_en=False)
+            mon_ana_drv = init_mon_ana_drv(op_mode=op_mode, src_mode=src_mode, rmp_ah_en=False, rmp_al_en=False)
 
             mon_ana_drv.start_monitor()
             eval(f'mon_ana_drv.{set_command}({command})')
@@ -121,8 +115,7 @@ test_scenario_control_signals_fwd = [('op', 'int', 'set_fwd_op', 'set_stop_op'),
 
 def test_dynamic_error_fwd_stop():
     for op_mode, src_mode, fwd_command, stop_command in test_scenario_control_signals_fwd:
-        mon_ana_drv = init_mon_ana_drv(
-            op_mode=op_mode, src_mode=src_mode, rmp_ah_en=False, rmp_al_en=False)
+        mon_ana_drv = init_mon_ana_drv(op_mode=op_mode, src_mode=src_mode, rmp_ah_en=False, rmp_al_en=False)
 
         mon_ana_drv.start_monitor()
         eval(f'mon_ana_drv.{fwd_command}(True)')
@@ -135,8 +128,7 @@ def test_dynamic_error_fwd_stop():
         assert mon_ana_drv.attributes['MonDynErr'].value == True
         assert mon_ana_drv.attributes['MonStatErr'].value == False
         assert mon_ana_drv.attributes['SafePosAct'].value == True
-        # safe position is clockwise rotation
-        assert mon_ana_drv.attributes['FwdFbk'].value == True
+        assert mon_ana_drv.attributes['FwdFbk'].value == True  # safe position is clockwise rotation
 
         eval(f'mon_ana_drv.{stop_command}(True)')
         print(f'Scenario: mode {op_mode} {src_mode}, {stop_command}')
@@ -148,8 +140,7 @@ def test_dynamic_error_fwd_stop():
         assert mon_ana_drv.attributes['MonDynErr'].value == True
         assert mon_ana_drv.attributes['MonStatErr'].value == False
         assert mon_ana_drv.attributes['SafePosAct'].value == True
-        # safe position is clockwise rotation
-        assert mon_ana_drv.attributes['FwdFbk'].value == True
+        assert mon_ana_drv.attributes['FwdFbk'].value == True  # safe position is clockwise rotation
 
         mon_ana_drv.set_stop_monitor()
         mon_ana_drv.monitor_static_thread.join()
@@ -166,8 +157,7 @@ test_scenario_control_signals_rev = [('op', 'int', 'set_rev_op', 'set_stop_op'),
 
 def test_dynamic_error_rev_stop():
     for op_mode, src_mode, rev_command, stop_command in test_scenario_control_signals_rev:
-        mon_ana_drv = init_mon_ana_drv(
-            op_mode=op_mode, src_mode=src_mode, rmp_ah_en=False, rmp_al_en=False)
+        mon_ana_drv = init_mon_ana_drv(op_mode=op_mode, src_mode=src_mode, rmp_ah_en=False, rmp_al_en=False)
 
         mon_ana_drv.start_monitor()
         eval(f'mon_ana_drv.{rev_command}(True)')
@@ -179,8 +169,7 @@ def test_dynamic_error_rev_stop():
         assert mon_ana_drv.attributes['MonDynErr'].value == True
         assert mon_ana_drv.attributes['MonStatErr'].value == False
         assert mon_ana_drv.attributes['SafePosAct'].value == True
-        # safe position is clockwise rotation
-        assert mon_ana_drv.attributes['FwdFbk'].value == True
+        assert mon_ana_drv.attributes['FwdFbk'].value == True  # safe position is clockwise rotation
 
         eval(f'mon_ana_drv.{stop_command}(True)')
         print(f'Scenario: mode {op_mode} {src_mode}, {stop_command}')
@@ -192,8 +181,7 @@ def test_dynamic_error_rev_stop():
         assert mon_ana_drv.attributes['MonDynErr'].value == True
         assert mon_ana_drv.attributes['MonStatErr'].value == False
         assert mon_ana_drv.attributes['SafePosAct'].value == True
-        # safe position is clockwise rotation
-        assert mon_ana_drv.attributes['FwdFbk'].value == True
+        assert mon_ana_drv.attributes['FwdFbk'].value == True  # safe position is clockwise rotation
 
         mon_ana_drv.set_stop_monitor()
         mon_ana_drv.monitor_static_thread.join()
@@ -210,8 +198,7 @@ test_scenario_control_signals_reset = [('op', 'int', 'set_reset_op'),
 
 def test_dynamic_error_reset():
     for op_mode, src_mode, set_command in test_scenario_control_signals_reset:
-        mon_ana_drv = init_mon_ana_drv(
-            op_mode=op_mode, src_mode=src_mode, rmp_ah_en=False, rmp_al_en=False)
+        mon_ana_drv = init_mon_ana_drv(op_mode=op_mode, src_mode=src_mode, rmp_ah_en=False, rmp_al_en=False)
 
         mon_ana_drv.start_monitor()
         # set valve to open
@@ -232,8 +219,7 @@ def test_dynamic_error_reset():
         assert mon_ana_drv.attributes['MonDynErr'].value == True
         assert mon_ana_drv.attributes['MonStatErr'].value == False
         assert mon_ana_drv.attributes['SafePosAct'].value == True
-        # safe position is clockwise rotation
-        assert mon_ana_drv.attributes['FwdFbk'].value == True
+        assert mon_ana_drv.attributes['FwdFbk'].value == True  # safe position is clockwise rotation
 
         mon_ana_drv.set_stop_monitor()
         mon_ana_drv.monitor_static_thread.join()
@@ -256,10 +242,8 @@ def test_rpm_error():
             time.sleep(0.5)
             eval(f'mon_ana_drv.{set_command}({command})')
 
-            print(
-                f'Scenario: mode {op_mode} {src_mode}, {set_command}, {command} changes expected: {changes_expected}')
-            # RpmFbk is 400, it does not reach desired rpm (500 or 700)
-            mon_ana_drv.attributes['RpmFbk'].set_value(400)
+            print(f'Scenario: mode {op_mode} {src_mode}, {set_command}, {command} changes expected: {changes_expected}')
+            mon_ana_drv.attributes['RpmFbk'].set_value(400)  # RpmFbk is 400, it does not reach desired rpm (500 or 700)
             time.sleep(0.5)
             if -10 <= command <= 1000:
                 if command == 500:
@@ -270,8 +254,7 @@ def test_rpm_error():
                 assert mon_ana_drv.attributes['RpmErr'].value == -410
 
             assert mon_ana_drv.attributes['SafePosAct'].value == True
-            # safe position is clockwise rotation
-            assert mon_ana_drv.attributes['FwdFbk'].value == True
+            assert mon_ana_drv.attributes['FwdFbk'].value == True  # safe position is clockwise rotation
 
             mon_ana_drv.set_stop_monitor()
             mon_ana_drv.monitor_static_thread.join()
@@ -287,8 +270,7 @@ def test_rpm_high_limit_alarm():
             mon_ana_drv.start_monitor()
             time.sleep(0.5)
             eval(f'mon_ana_drv.{set_command}({command})')
-            print(
-                f'Scenario: mode {op_mode} {src_mode}, {set_command}, {command} changes expected: {changes_expected}')
+            print(f'Scenario: mode {op_mode} {src_mode}, {set_command}, {command} changes expected: {changes_expected}')
             time.sleep(0.5)
 
             if -10 <= command <= 1000:
@@ -311,8 +293,7 @@ def test_rpm_low_limit_alarm():
             mon_ana_drv.start_monitor()
             time.sleep(0.5)
             eval(f'mon_ana_drv.{set_command}({command})')
-            print(
-                f'Scenario: mode {op_mode} {src_mode}, {set_command}, {command} changes expected: {changes_expected}')
+            print(f'Scenario: mode {op_mode} {src_mode}, {set_command}, {command} changes expected: {changes_expected}')
             time.sleep(0.5)
 
             assert mon_ana_drv.attributes['RpmALAct'].value == True
