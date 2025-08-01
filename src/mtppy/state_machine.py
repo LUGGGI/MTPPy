@@ -81,6 +81,9 @@ class StateMachine:
     def start(self):
         if self.command_en_ctrl.is_enabled('start'):
             self.procedure_control.set_procedure_cur()
+            self.procedure_control.attributes['ProcedureOp'].set_value(0)
+            self.procedure_control.attributes['ProcedureInt'].set_value(0)
+            self.procedure_control.attributes['ProcedureExt'].set_value(0)
             self.procedure_control.apply_procedure_parameters()
             self._change_state_to(StateCodes.starting)
 

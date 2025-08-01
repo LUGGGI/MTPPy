@@ -53,7 +53,9 @@ class ProcedureControl:
             self.attributes['ProcedureReq'].set_value(value)
             _logger.debug('ProcedureReq set to %s' % value)
         else:
-            _logger.debug('ProcedureReq cannot be set to %s (out of range)' % value)
+            self.attributes['ProcedureReq'].set_value(0)
+            if value != 0:
+                _logger.warning('ProcedureReq cannot be set to %s (out of range)' % value)
 
     def set_procedure_cur(self):
         procedure_req = self.attributes['ProcedureReq'].value
