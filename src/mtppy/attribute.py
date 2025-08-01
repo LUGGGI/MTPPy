@@ -72,3 +72,18 @@ class Attribute:
             communication_object (type): Communication object.
         """
         self.comm_obj = communication_object
+
+    def attach_subscription_callback(self, sub_cb):
+        """
+        Attach a subscription callback to the attribute.
+
+        Args:
+            sub_cb (callable): Subscription callback.
+        """
+        self.sub_cb = sub_cb
+
+    def remove_subscription_callback(self):
+        """
+        Remove the subscription callback from the attribute.
+        """
+        self.sub_cb = None

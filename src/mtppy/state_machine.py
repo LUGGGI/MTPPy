@@ -34,13 +34,24 @@ class StateMachine:
             'CommandEn': Attribute('CommandEn', int, init_value=0),
         }
 
-        self.op_src_mode = operation_source_mode
-        self.procedure_control = procedure_control
+        self.op_src_mode: OperationSourceMode = operation_source_mode
+        self.procedure_control: ProcedureControl = procedure_control
         self.execution_routine = execution_routine
         self.command_en_ctrl = CommandEnControl()
 
         self.act_state = StateCodes.idle
         self.prev_state = StateCodes.idle
+
+        self.op_src_mode.add_enter_operator_callback(
+            # adds function to disable commands if no procedure is set
+            # lambda allows adding function with argument
+            lambda: self.procedure_control.attributes['ProcedureReq'].attach_subscription_callback(
+                self.disable_commands_if_no_procedure)
+        )
+        self.op_src_mode.add_exit_operator_callback(
+            # removes function to disables commands if no procedure is set
+            self.procedure_control.attributes['ProcedureReq'].remove_subscription_callback()
+        )
 
     def set_command_op(self, value: int):
         if self.op_src_mode.attributes['StateOpAct'].value:
@@ -80,6 +91,9 @@ class StateMachine:
 
     def start(self):
         if self.command_en_ctrl.is_enabled('start'):
+            # removes the function to disables commands if no procedure is set
+            self.procedure_control.attributes['ProcedureReq'].remove_subscription_callback()
+
             self.procedure_control.set_procedure_cur()
             self.procedure_control.attributes['ProcedureOp'].set_value(0)
             self.procedure_control.attributes['ProcedureInt'].set_value(0)
@@ -106,6 +120,9 @@ class StateMachine:
     def reset(self):
         if self.command_en_ctrl.is_enabled('reset'):
             self._change_state_to(StateCodes.resetting)
+            # adds function to disable commands if no procedure is set
+            self.procedure_control.attributes['ProcedureReq'].attach_subscription_callback(
+                self.disable_commands_if_no_procedure)
 
     def hold(self):
         if self.command_en_ctrl.is_enabled('hold'):
@@ -170,3 +187,16 @@ class StateMachine:
             str: Current state as a string.
         """
         return StateCodes.int_code[self.act_state]
+
+    def disable_commands_if_no_procedure(self, value: int):
+        """
+        Disables all commands if value is 0 and the current state is idle.
+
+        Args:
+            value (int): Value of the ProcedureReq attribute.
+        """
+        if self.act_state is StateCodes.idle and value == 0:
+            self.command_en_ctrl.disable_all()
+        else:
+            self.command_en_ctrl.execute(self.get_current_state_str())
+        self.update_command_en()

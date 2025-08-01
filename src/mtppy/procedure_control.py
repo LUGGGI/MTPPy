@@ -59,11 +59,22 @@ class ProcedureControl:
 
     def set_procedure_cur(self):
         procedure_req = self.attributes['ProcedureReq'].value
+
+        if not self.valid_value(procedure_req):
+            if procedure_req == 0:
+                raise ValueError("No procedure requested. Please set a valid procedure ID.")
+            else:
+                raise ValueError(
+                    f"No procedure with ID {procedure_req} exists. Please set a valid procedure ID.")
+
         self.attributes['ProcedureCur'].set_value(procedure_req)
         _logger.debug('ProcedureCur set to %s' % procedure_req)
 
     def get_procedure_cur(self):
         return self.attributes['ProcedureCur'].value
+
+    def get_procedure_req(self):
+        return self.attributes['ProcedureReq'].value
 
     def apply_procedure_parameters(self):
         self.procedures[self.get_procedure_cur()].apply_procedure_parameters()
