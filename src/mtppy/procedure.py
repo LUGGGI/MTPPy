@@ -12,12 +12,14 @@ class Procedure(SUCServiceProcedure):
         Represents a procedure of a service.
 
         Args:
-            procedure_id (int): Procedure id.
+            procedure_id (int): Procedure id. Can't be equal or less than 0.
             tag_name (str): Tag name of the procedure.
             tag_description (str): Tag description of the procedure.
             is_self_completing (bool): Self-completing or not.
             is_default (bool): Default or not.
         """
+        if procedure_id <= 0:
+            raise ValueError(f"{tag_name}: Procedure ID can't be equal or less than 0.")
         super().__init__(procedure_id, tag_name, tag_description, is_self_completing, is_default)
         self.procedure_parameters = {}
         self.process_value_ins = {}

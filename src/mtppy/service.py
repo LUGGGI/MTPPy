@@ -162,6 +162,8 @@ class Service(SUCServiceControl):
             self.procedure_control.attributes['ProcedureOp'].init_value = self.procedure_control.default_procedure_id
             self.procedure_control.attributes['ProcedureInt'].init_value = self.procedure_control.default_procedure_id
             self.procedure_control.attributes['ProcedureExt'].init_value = self.procedure_control.default_procedure_id
+            self.procedure_control.attributes['ProcedureReq'].init_value = self.procedure_control.default_procedure_id
+            self.procedure_control.set_procedure_req(self.procedure_control.default_procedure_id)
 
     def idle(self):
         """
