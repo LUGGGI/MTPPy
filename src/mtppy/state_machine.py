@@ -50,7 +50,7 @@ class StateMachine:
         )
         self.op_src_mode.add_exit_operator_callback(
             # removes function to disables commands if no procedure is set
-            self.procedure_control.attributes['ProcedureReq'].remove_subscription_callback()
+            self.procedure_control.attributes['ProcedureReq'].remove_subscription_callback
         )
 
     def set_command_op(self, value: int):

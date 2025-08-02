@@ -68,6 +68,7 @@ class Service(SUCServiceControl):
                                          state_change_function=self.state_change())
 
         self.op_src_mode.add_enter_offline_callback(self.state_machine.command_en_ctrl.disable_all)
+        self.op_src_mode.add_enter_offline_callback(self.state_machine.update_command_en)
         self.op_src_mode.add_enter_offline_callback(self.thread_ctrl.stop_thread)
 
         self.op_src_mode.add_exit_offline_callback(self.state_machine.command_en_ctrl.set_default)
