@@ -24,6 +24,7 @@ class CommandEnControl:
         self.hold_enabled = True
         self.pause_enabled = True
         self.restart_enabled = True
+        self.restart_enabled_actual = True
 
     def set_default(self):
         """
@@ -104,6 +105,20 @@ class CommandEnControl:
             value (bool): True if the restart command is to active and False if to disable.
         """
         self.restart_enabled = value
+        self.restart_enabled_actual = value
+
+    def disable_restart_temporarily(self):
+        """
+        Disables restart command without overriding the actual setting.
+        """
+        self.restart_enabled = False
+        self.set_command_en('restart', False)
+
+    def restore_restart(self):
+        """
+        Restores the restart command to the actual setting.
+        """
+        self.restart_enabled = self.restart_enabled_actual
 
     def execute(self, state: str):
         """
@@ -132,8 +147,7 @@ class CommandEnControl:
             self.set_command_en('pause', False)
             self.set_command_en('resume', False)
         self.set_command_en('abort', True)
-        if self.restart_enabled:
-            self.set_command_en('restart', False)
+        self.set_command_en('restart', False)
         self.set_command_en('complete', False)
 
     def _execute_starting(self):
@@ -147,8 +161,7 @@ class CommandEnControl:
             self.set_command_en('pause', False)
             self.set_command_en('resume', False)
         self.set_command_en('abort', True)
-        if self.restart_enabled:
-            self.set_command_en('restart', False)
+        self.set_command_en('restart', False)
         self.set_command_en('complete', True)
 
     def _execute_execute(self):
@@ -177,8 +190,7 @@ class CommandEnControl:
             self.set_command_en('pause', False)
             self.set_command_en('resume', False)
         self.set_command_en('abort', True)
-        if self.restart_enabled:
-            self.set_command_en('restart', False)
+        self.set_command_en('restart', False)
         self.set_command_en('complete', False)
 
     def _execute_completed(self):
@@ -192,8 +204,7 @@ class CommandEnControl:
             self.set_command_en('pause', False)
             self.set_command_en('resume', False)
         self.set_command_en('abort', True)
-        if self.restart_enabled:
-            self.set_command_en('restart', False)
+        self.set_command_en('restart', False)
         self.set_command_en('complete', False)
 
     def _execute_resuming(self):
@@ -207,8 +218,7 @@ class CommandEnControl:
             self.set_command_en('pause', False)
             self.set_command_en('resume', False)
         self.set_command_en('abort', True)
-        if self.restart_enabled:
-            self.set_command_en('restart', False)
+        self.set_command_en('restart', False)
         self.set_command_en('complete', True)
 
     def _execute_paused(self):
@@ -222,8 +232,7 @@ class CommandEnControl:
             self.set_command_en('pause', False)
             self.set_command_en('resume', True)
         self.set_command_en('abort', True)
-        if self.restart_enabled:
-            self.set_command_en('restart', False)
+        self.set_command_en('restart', False)
         self.set_command_en('complete', True)
 
     def _execute_pausing(self):
@@ -237,8 +246,7 @@ class CommandEnControl:
             self.set_command_en('pause', False)
             self.set_command_en('resume', False)
         self.set_command_en('abort', True)
-        if self.restart_enabled:
-            self.set_command_en('restart', False)
+        self.set_command_en('restart', False)
         self.set_command_en('complete', True)
 
     def _execute_holding(self):
@@ -252,8 +260,7 @@ class CommandEnControl:
             self.set_command_en('pause', False)
             self.set_command_en('resume', False)
         self.set_command_en('abort', True)
-        if self.restart_enabled:
-            self.set_command_en('restart', False)
+        self.set_command_en('restart', False)
         self.set_command_en('complete', False)
 
     def _execute_held(self):
@@ -267,8 +274,7 @@ class CommandEnControl:
             self.set_command_en('pause', False)
             self.set_command_en('resume', False)
         self.set_command_en('abort', True)
-        if self.restart_enabled:
-            self.set_command_en('restart', False)
+        self.set_command_en('restart', False)
         self.set_command_en('complete', False)
 
     def _execute_unholding(self):
@@ -282,8 +288,7 @@ class CommandEnControl:
             self.set_command_en('pause', False)
             self.set_command_en('resume', False)
         self.set_command_en('abort', True)
-        if self.restart_enabled:
-            self.set_command_en('restart', False)
+        self.set_command_en('restart', False)
         self.set_command_en('complete', True)
 
     def _execute_stopping(self):
@@ -297,8 +302,7 @@ class CommandEnControl:
             self.set_command_en('pause', False)
             self.set_command_en('resume', False)
         self.set_command_en('abort', True)
-        if self.restart_enabled:
-            self.set_command_en('restart', False)
+        self.set_command_en('restart', False)
         self.set_command_en('complete', False)
 
     def _execute_stopped(self):
@@ -312,8 +316,7 @@ class CommandEnControl:
             self.set_command_en('pause', False)
             self.set_command_en('resume', False)
         self.set_command_en('abort', True)
-        if self.restart_enabled:
-            self.set_command_en('restart', False)
+        self.set_command_en('restart', False)
         self.set_command_en('complete', False)
 
     def _execute_aborting(self):
@@ -327,8 +330,7 @@ class CommandEnControl:
             self.set_command_en('pause', False)
             self.set_command_en('resume', False)
         self.set_command_en('abort', False)
-        if self.restart_enabled:
-            self.set_command_en('restart', False)
+        self.set_command_en('restart', False)
         self.set_command_en('complete', False)
 
     def _execute_aborted(self):
@@ -342,8 +344,7 @@ class CommandEnControl:
             self.set_command_en('pause', False)
             self.set_command_en('resume', False)
         self.set_command_en('abort', False)
-        if self.restart_enabled:
-            self.set_command_en('restart', False)
+        self.set_command_en('restart', False)
         self.set_command_en('complete', False)
 
     def _execute_resetting(self):
@@ -357,6 +358,5 @@ class CommandEnControl:
             self.set_command_en('pause', False)
             self.set_command_en('resume', False)
         self.set_command_en('abort', True)
-        if self.restart_enabled:
-            self.set_command_en('restart', False)
+        self.set_command_en('restart', False)
         self.set_command_en('complete', False)

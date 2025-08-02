@@ -76,6 +76,23 @@ class Service(SUCServiceControl):
         self.op_src_mode.add_exit_offline_callback(self.apply_configuration_parameters)
         self.op_src_mode.add_exit_offline_callback(self.init_idle_state)
 
+        self.op_src_mode.add_enter_operator_callback(
+            # adds function to disable commands if no procedure is set
+            # lambda allows adding function with argument
+            lambda: self.procedure_control.attributes['ProcedureReq'].attach_subscription_callback(
+                self.state_machine.disable_commands_if_no_procedure)
+        )
+        self.op_src_mode.add_enter_operator_callback(
+            lambda: self.state_machine.disable_commands_if_no_procedure(
+                self.procedure_control.attributes['ProcedureReq'].value
+            )
+        )
+
+        self.op_src_mode.add_exit_operator_callback(
+            # removes function to disables commands if no procedure is set
+            self.procedure_control.attributes['ProcedureReq'].remove_subscription_callback
+        )
+
     def init_idle_state(self):
         """
         Initializes the idle state.
