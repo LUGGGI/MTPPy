@@ -93,6 +93,33 @@ class Service(SUCServiceControl):
             self.procedure_control.attributes['ProcedureReq'].remove_subscription_callback
         )
 
+    def enable_pause_loop(self, enable: bool = True):
+        """
+        Enables or disables the pause loop.
+
+        Args:
+            enable (bool): If True, enables the pause loop. If False, disables it.
+        """
+        self.state_machine.command_en_ctrl.enable_pause_loop(enable)
+
+    def enable_restart(self, enable: bool = True):
+        """
+        Enables or disables the restart command.
+
+        Args:
+            enable (bool): If True, enables the restart command. If False, disables it.
+        """
+        self.state_machine.command_en_ctrl.enable_restart(enable)
+
+    def enable_restart(self, enable: bool = True):
+        """
+        Enables or disables the restart command.
+
+        Args:
+            enable (bool): If True, enables the restart command. If False, disables it.
+        """
+        self.state_machine.command_en_ctrl.enable_restart(enable)
+
     def init_idle_state(self):
         """
         Initializes the idle state.

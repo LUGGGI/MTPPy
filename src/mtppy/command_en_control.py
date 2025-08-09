@@ -21,10 +21,10 @@ class CommandEnControl:
             'restart': {'default': False, 'value': False, 'bit_no': 9, 'int': 512},
             'complete': {'default': False, 'value': False, 'bit_no': 10, 'int': 1024},
         }
-        self.hold_enabled = True
-        self.pause_enabled = True
+        self.hold_enabled = False
+        self.pause_enabled = False
         self.restart_enabled = True
-        self.restart_enabled_actual = True
+        self.__restart_enabled_actual = True
 
     def set_default(self):
         """
@@ -105,7 +105,7 @@ class CommandEnControl:
             value (bool): True if the restart command is to active and False if to disable.
         """
         self.restart_enabled = value
-        self.restart_enabled_actual = value
+        self.__restart_enabled_actual = value
 
     def disable_restart_temporarily(self):
         """
@@ -118,7 +118,7 @@ class CommandEnControl:
         """
         Restores the restart command to the actual setting.
         """
-        self.restart_enabled = self.restart_enabled_actual
+        self.restart_enabled = self.__restart_enabled_actual
 
     def execute(self, state: str):
         """
