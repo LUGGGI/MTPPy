@@ -19,13 +19,16 @@ class StoppableThread(Thread):
 
 
 class ThreadControl:
-    def __init__(self, service_name: str = '', state_change_function: Callable = None):
+    def __init__(self, service_name: str = '',
+                 state_change_function: Callable = None,
+                 exception_callback: Callable[[Exception], None] = None):
         """
         Represents a thread control to be able to run with multithreading.
 
         Args:
             service_name (str): Name of the service.
             state_change_function (Callable): Function to call after a state completes.
+            exception_callback (Callable): Function to call when an exception occurs in the thread.
         """
         self.service_name = service_name
         self.state_change_function = state_change_function
@@ -33,8 +36,7 @@ class ThreadControl:
         self.running_state = ''
         self.requested_state = ''
         self.callback_function: Callable = None
-        self.exception_event = Event()
-        self.exception: Exception = None
+        self.exception_callback: Callable[[Exception], None] = exception_callback
 
     def request_state(self, state: str, cb_function: Callable):
         """
@@ -63,7 +65,7 @@ class ThreadControl:
 
     def run_thread(self, target_function: Callable):
         """
-        Runs the given target function. Sets the exception if it occurs.
+        Runs the given target function. If an exception occurs the exception callback is called.
 
         Args:
             target_function (Callable): The function to run in the thread.
@@ -79,8 +81,8 @@ class ThreadControl:
                 _logger.debug("Stop event was set, stopping thread execution.")
 
         except Exception as e:
-            self.exception = e
-            self.exception_event.set()
+            self.exception_callback(e) if self.exception_callback else _logger.error(
+                f"Exception in thread {self.thread.name}: {e}", exc_info=True)
 
     def stop_thread(self, stop_if_current_thread: bool = True):
         """

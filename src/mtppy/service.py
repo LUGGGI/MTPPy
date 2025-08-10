@@ -1,6 +1,7 @@
 import logging
 import time
 from threading import Event
+from collections.abc import Callable
 
 from abc import abstractmethod
 
@@ -43,13 +44,15 @@ class Service(SUCServiceControl):
 
     """
 
-    def __init__(self, tag_name: str, tag_description: str):
+    def __init__(self, tag_name: str, tag_description: str, exception_callback: Callable[[Exception], None] = None):
         """
         Represents a service of the PEA.
 
         Args:
             tag_name (str): Tag name of the service.
             tag_description (str): Tag description of the service.
+            exception_callback (Callable[[Exception], None]): Function to call 
+                when an exception occurs in the thread.
         """
         super().__init__(tag_name, tag_description)
 
@@ -65,7 +68,8 @@ class Service(SUCServiceControl):
                                           execution_routine=self.state_change_callback)
 
         self.thread_ctrl = ThreadControl(service_name=tag_name,
-                                         state_change_function=self.state_change())
+                                         state_change_function=self.state_change(),
+                                         exception_callback=exception_callback)
 
         self.op_src_mode.add_enter_offline_callback(self.state_machine.command_en_ctrl.disable_all)
         self.op_src_mode.add_enter_offline_callback(self.state_machine.update_command_en)
@@ -368,5 +372,4 @@ class Service(SUCServiceControl):
         else:
             pass
         # Reset the state machine to idle
-        self.thread_ctrl.exception = None
         self.state_change()
