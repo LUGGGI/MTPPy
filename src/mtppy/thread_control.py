@@ -54,8 +54,10 @@ class ThreadControl:
         """
         Reallocates the running thread to the requested state.
         """
-        _logger.debug(f'Reallocate thread to state {self.requested_state}')
-        if self.requested_state is not self.running_state:
+        if (self.requested_state is not self.running_state
+                or (self.running_state == "idle" and
+                    (self.thread is None or not self.thread.is_alive()))):
+            _logger.debug(f'Reallocate thread to state {self.requested_state}')
             self.stop_thread(stop_if_current_thread=False)
 
             self.thread = StoppableThread(target=self.run_thread, args=(self.callback_function,),
