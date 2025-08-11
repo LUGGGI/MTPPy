@@ -21,10 +21,10 @@ class Procedure(SUCServiceProcedure):
         if procedure_id <= 0:
             raise ValueError(f"{tag_name}: Procedure ID can't be equal or less than 0.")
         super().__init__(procedure_id, tag_name, tag_description, is_self_completing, is_default)
-        self.procedure_parameters = {}
+        self.procedure_parameters: dict[str, SUCOperationElement] = {}
         self.process_value_ins = {}
-        self.report_values = {}
-        self.process_value_outs = {}
+        self.report_values: dict[str, SUCIndicatorElement] = {}
+        self.process_value_outs: dict[str, SUCIndicatorElement] = {}
 
     def add_procedure_parameter(self, procedure_parameter: SUCOperationElement):
         """

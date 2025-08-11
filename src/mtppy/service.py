@@ -60,7 +60,7 @@ class Service(SUCServiceControl):
 
         self.configuration_parameters = {}
 
-        self.procedures = {}
+        self.procedures: dict[int, Procedure] = {}
         self.procedure_control = ProcedureControl(self.procedures, self.op_src_mode)
 
         self.state_machine = StateMachine(operation_source_mode=self.op_src_mode,

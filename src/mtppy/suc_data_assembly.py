@@ -1,4 +1,5 @@
 from mtppy.attribute import Attribute
+from abc import abstractmethod
 
 
 class SUCDataAssembly:
@@ -20,12 +21,75 @@ class SUCIndicatorElement(SUCDataAssembly):
         self._add_attribute(Attribute('OSLevel', int, init_value=0))
         self._add_attribute(Attribute('WQC', int, init_value=255))
 
+    @abstractmethod
+    def set_v(self, value):
+        """
+        Set the value of the 'V' attribute.
+        """
+        pass
+
 
 class SUCOperationElement(SUCDataAssembly):
     def __init__(self, tag_name: str, tag_description: str):
         super().__init__(tag_name, tag_description)
         self._add_attribute(Attribute('OSLevel', int, init_value=0))
         self._add_attribute(Attribute('WQC', int, init_value=255))
+
+    @abstractmethod
+    def set_v_op(self, value):
+        """
+        Set Parameter value if StateOpAct.
+        """
+        pass
+
+    @abstractmethod
+    def set_v_int(self, value):
+        """
+        Set Parameter value if StateIntAct.
+        """
+        pass
+
+    @abstractmethod
+    def set_v_ext(self, value):
+        """
+        Set Parameter value if StateExAct.
+        """
+        pass
+
+    @abstractmethod
+    def valid_value(self, value):
+        """
+        Validate if the value is within the acceptable range.
+        """
+        pass
+
+    @abstractmethod
+    def set_v_req(self, value):
+        """
+        Set VReq (requested parameter value) to the specified value if valid.
+        """
+        pass
+
+    @abstractmethod
+    def set_v_out(self):
+        """
+        Set VOut (current parameter value) based on VReq and update feedback.
+        """
+        pass
+
+    @abstractmethod
+    def get_v_out(self):
+        """
+        Get the current value of VOut (current parameter value).
+        """
+        pass
+
+    @abstractmethod
+    def set_v_fbk(self, value):
+        """
+        Set VFbk (feedback value) to the specified value.
+        """
+        pass
 
 
 class SUCActiveElement(SUCDataAssembly):
