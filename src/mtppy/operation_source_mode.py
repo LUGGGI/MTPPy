@@ -151,39 +151,39 @@ class OperationSourceMode:
     def set_state_aut_aut(self, value: bool):
         _logger.debug(f'StateAutAut set to {value}')
         if self.attributes['StateChannel'].value and value:
-            if self.attributes['StateOffAct'] or self.attributes['StateOpAct']:
+            if self.attributes['StateOffAct'].value or self.attributes['StateOpAct'].value:
                 self._opmode_to_aut()
 
     def set_state_aut_op(self, value: bool):
         _logger.debug(f'StateAutOp set to {value}')
         if not self.attributes['StateChannel'].value and value:
-            if self.attributes['StateOffAct'] or self.attributes['StateOpAct']:
+            if self.attributes['StateOffAct'].value or self.attributes['StateOpAct'].value:
                 self._opmode_to_aut()
                 self.attributes['StateAutOp'].set_value(False)
 
     def set_state_off_aut(self, value: bool):
         _logger.debug(f'StateOffAut set to {value}')
         if self.attributes['StateChannel'].value and value and self.switch_to_offline_mode_allowed:
-            if self.attributes['StateAutAct'] or self.attributes['StateOpAct']:
+            if self.attributes['StateAutAct'].value or self.attributes['StateOpAct'].value:
                 self._opmode_to_off()
 
     def set_state_off_op(self, value: bool):
         _logger.debug(f'StateOffOp set to {value}')
         if not self.attributes['StateChannel'].value and value and self.switch_to_offline_mode_allowed:
-            if self.attributes['StateAutAct'] or self.attributes['StateOpAct']:
+            if self.attributes['StateAutAct'].value or self.attributes['StateOpAct'].value:
                 self._opmode_to_off()
                 self.attributes['StateOffOp'].set_value(False)
 
     def set_state_op_aut(self, value: bool):
         _logger.debug(f'StateOpAut set to {value}')
         if self.attributes['StateChannel'].value and value:
-            if self.attributes['StateOffAct'] or self.attributes['StateOpAct']:
+            if self.attributes['StateOffAct'].value or self.attributes['StateOpAct'].value:
                 self._opmode_to_op()
 
     def set_state_op_op(self, value: bool):
         _logger.debug(f'StateOpOp set to {value}')
         if not self.attributes['StateChannel'].value and value:
-            if self.attributes['StateOffAct'] or self.attributes['StateAutAct']:
+            if self.attributes['StateOffAct'].value or self.attributes['StateAutAct'].value:
                 self._opmode_to_op()
                 self.attributes['StateOpOp'].set_value(False)
 

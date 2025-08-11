@@ -38,17 +38,17 @@ class AnaServParam(SUCOperationElement):
 
     def set_v_op(self, value):
         _logger.debug('VOp set to %s' % value)
-        if self.op_src_mode.attributes['StateOpAct']:
+        if self.op_src_mode.attributes['StateOpAct'].value:
             self.set_v_req(value)
 
     def set_v_int(self, value):
         _logger.debug('VInt set to %s' % value)
-        if self.op_src_mode.attributes['StateAutAct'] and self.op_src_mode.attributes['SrcIntAct']:
+        if self.op_src_mode.attributes['StateAutAct'].value and self.op_src_mode.attributes['SrcIntAct'].value:
             self.set_v_req(value)
 
     def set_v_ext(self, value):
         _logger.debug('VExt set to %s' % value)
-        if self.op_src_mode.attributes['StateAutAct'] and self.op_src_mode.attributes['SrcExtAct']:
+        if self.op_src_mode.attributes['StateAutAct'].value and self.op_src_mode.attributes['SrcExtAct'].value:
             self.set_v_req(value)
 
     def valid_value(self, value):
@@ -102,17 +102,17 @@ class BinServParam(SUCOperationElement):
 
     def set_v_op(self, value):
         _logger.debug('VOp set to %s' % value)
-        if self.op_src_mode.attributes['StateOpAct']:
+        if self.op_src_mode.attributes['StateOpAct'].value:
             self.set_v_req(value)
 
     def set_v_int(self, value):
         _logger.debug('VInt set to %s' % value)
-        if self.op_src_mode.attributes['StateAutAct'] and self.op_src_mode.attributes['SrcIntAct']:
+        if self.op_src_mode.attributes['StateAutAct'].value and self.op_src_mode.attributes['SrcIntAct'].value:
             self.set_v_req(value)
 
     def set_v_ext(self, value):
         _logger.debug('VExt set to %s' % value)
-        if self.op_src_mode.attributes['StateAutAct'] and self.op_src_mode.attributes['SrcExtAct']:
+        if self.op_src_mode.attributes['StateAutAct'].value and self.op_src_mode.attributes['SrcExtAct'].value:
             self.set_v_req(value)
 
     def set_v_req(self, value):
@@ -164,17 +164,19 @@ class DIntServParam(SUCOperationElement):
 
     def set_v_op(self, value):
         _logger.debug('VOp set to %s' % value)
-        if self.op_src_mode.attributes['StateOpAct']:
+        if self.op_src_mode.attributes['StateOpAct'].value:
             self.set_v_req(value)
 
     def set_v_int(self, value):
         _logger.debug('VInt set to %s' % value)
-        if self.op_src_mode.attributes['StateAutAct'] and self.op_src_mode.attributes['SrcIntAct']:
+        if (self.op_src_mode.attributes['StateAutAct'].value
+                and self.op_src_mode.attributes['SrcIntAct'].value):
             self.set_v_req(value)
 
     def set_v_ext(self, value):
         _logger.debug('VExt set to %s' % value)
-        if self.op_src_mode.attributes['StateAutAct'] and self.op_src_mode.attributes['SrcExtAct']:
+        if (self.op_src_mode.attributes['StateAutAct'].value
+                and self.op_src_mode.attributes['SrcExtAct'].value):
             self.set_v_req(value)
 
     def valid_value(self, value):
@@ -223,17 +225,17 @@ class StringServParam(SUCOperationElement):
 
     def set_v_op(self, value):
         _logger.debug('VOp set to %s' % value)
-        if self.op_src_mode.attributes['StateOpAct']:
+        if self.op_src_mode.attributes['StateOpAct'].value:
             self.set_v_req(value)
 
     def set_v_int(self, value):
         _logger.debug('VInt set to %s' % value)
-        if self.op_src_mode.attributes['StateAutAct'] and self.op_src_mode.attributes['SrcIntAct']:
+        if self.op_src_mode.attributes['StateAutAct'].value and self.op_src_mode.attributes['SrcIntAct'].value:
             self.set_v_req(value)
 
     def set_v_ext(self, value):
         _logger.debug('VExt set to %s' % value)
-        if self.op_src_mode.attributes['StateAutAct'] and self.op_src_mode.attributes['SrcExtAct']:
+        if self.op_src_mode.attributes['StateAutAct'].value and self.op_src_mode.attributes['SrcExtAct'].value:
             self.set_v_req(value)
 
     def valid_value(self, value):
