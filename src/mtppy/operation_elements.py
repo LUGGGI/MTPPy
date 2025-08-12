@@ -9,7 +9,7 @@ _logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
 
 class AnaServParam(SUCOperationElement):
     def __init__(self, tag_name: str, tag_description: str = '', v_min: float = 0, v_max: float = 100,
-                 v_scl_min: float = 0, v_scl_max: float = 100, v_unit: int = 0):
+                 v_scl_min: float = 0, v_scl_max: float = 100, v_unit: int = 0, init_value: float = None):
         """
         Analog Service Parameter (AnaServParam). Parameter names correspond attribute names in VDI/VDE/NAMUR 2658.
         """
@@ -22,11 +22,13 @@ class AnaServParam(SUCOperationElement):
         self.v_scl_min = v_scl_min
         self.v_scl_max = v_scl_max
         self.v_unit = v_unit
+        if init_value is None:
+            init_value = v_min
 
-        self._add_attribute(Attribute('VOp', float, init_value=v_min, sub_cb=self.set_v_op))
-        self._add_attribute(Attribute('VInt', float, init_value=v_min, sub_cb=self.set_v_int))
-        self._add_attribute(Attribute('VExt', float, init_value=v_min, sub_cb=self.set_v_ext))
-        self._add_attribute(Attribute('VReq', float, init_value=v_min))
+        self._add_attribute(Attribute('VOp', float, init_value=init_value, sub_cb=self.set_v_op))
+        self._add_attribute(Attribute('VInt', float, init_value=init_value, sub_cb=self.set_v_int))
+        self._add_attribute(Attribute('VExt', float, init_value=init_value, sub_cb=self.set_v_ext))
+        self._add_attribute(Attribute('VReq', float, init_value=init_value))
         self._add_attribute(Attribute('VOut', float, init_value=0))
         self._add_attribute(Attribute('VFbk', float, init_value=0))
         self._add_attribute(Attribute('VUnit', int, init_value=self.v_unit))
@@ -79,7 +81,7 @@ class AnaServParam(SUCOperationElement):
 
 
 class BinServParam(SUCOperationElement):
-    def __init__(self, tag_name: str, tag_description: str = '', v_state_0: str = 'false', v_state_1: str = 'true'):
+    def __init__(self, tag_name: str, tag_description: str = '', v_state_0: str = 'false', v_state_1: str = 'true', init_value: bool = False):
         """
         Binary Service Parameter (BinServParam). Parameter names correspond attribute names in VDI/VDE/NAMUR 2658.
         """
@@ -90,10 +92,10 @@ class BinServParam(SUCOperationElement):
         self.v_state_0 = v_state_0
         self.v_state_1 = v_state_1
 
-        self._add_attribute(Attribute('VOp', bool, init_value=False, sub_cb=self.set_v_op))
-        self._add_attribute(Attribute('VInt', bool, init_value=False, sub_cb=self.set_v_int))
-        self._add_attribute(Attribute('VExt', bool, init_value=False, sub_cb=self.set_v_ext))
-        self._add_attribute(Attribute('VReq', bool, init_value=False))
+        self._add_attribute(Attribute('VOp', bool, init_value=init_value, sub_cb=self.set_v_op))
+        self._add_attribute(Attribute('VInt', bool, init_value=init_value, sub_cb=self.set_v_int))
+        self._add_attribute(Attribute('VExt', bool, init_value=init_value, sub_cb=self.set_v_ext))
+        self._add_attribute(Attribute('VReq', bool, init_value=init_value))
         self._add_attribute(Attribute('VOut', bool, init_value=False))
         self._add_attribute(Attribute('VFbk', bool, init_value=False))
         self._add_attribute(Attribute('VState0', str, init_value=self.v_state_0))
@@ -135,7 +137,7 @@ class BinServParam(SUCOperationElement):
 
 class DIntServParam(SUCOperationElement):
     def __init__(self, tag_name: str, tag_description: str = '', v_min: int = 0, v_max: int = 100, v_scl_min: int = 0,
-                 v_scl_max: int = 100, v_unit: int = 0):
+                 v_scl_max: int = 100, v_unit: int = 0, init_value: int = None):
         """
         Discrete Integer Service Parameter (DIntServParam). Parameter names correspond attribute names in VDI/VDE/NAMUR 2658.
         """
@@ -148,11 +150,13 @@ class DIntServParam(SUCOperationElement):
         self.v_scl_min = v_scl_min
         self.v_scl_max = v_scl_max
         self.v_unit = v_unit
+        if init_value is None:
+            init_value = v_min
 
-        self._add_attribute(Attribute('VOp', int, init_value=v_min, sub_cb=self.set_v_op))
-        self._add_attribute(Attribute('VInt', int, init_value=v_min, sub_cb=self.set_v_int))
-        self._add_attribute(Attribute('VExt', int, init_value=v_min, sub_cb=self.set_v_ext))
-        self._add_attribute(Attribute('VReq', int, init_value=v_min))
+        self._add_attribute(Attribute('VOp', int, init_value=init_value, sub_cb=self.set_v_op))
+        self._add_attribute(Attribute('VInt', int, init_value=init_value, sub_cb=self.set_v_int))
+        self._add_attribute(Attribute('VExt', int, init_value=init_value, sub_cb=self.set_v_ext))
+        self._add_attribute(Attribute('VReq', int, init_value=init_value))
         self._add_attribute(Attribute('VOut', int, init_value=0))
         self._add_attribute(Attribute('VFbk', int, init_value=0))
         self._add_attribute(Attribute('VUnit', int, init_value=self.v_unit))
@@ -207,7 +211,7 @@ class DIntServParam(SUCOperationElement):
 
 
 class StringServParam(SUCOperationElement):
-    def __init__(self, tag_name: str, tag_description: str = ''):
+    def __init__(self, tag_name: str, tag_description: str = '', init_value: str = ''):
         """
         String Service Parameter (StringServParam). Parameter names correspond attribute names in VDI/VDE/NAMUR 2658.
         """
@@ -215,10 +219,10 @@ class StringServParam(SUCOperationElement):
 
         self.op_src_mode = OperationSourceMode()
 
-        self._add_attribute(Attribute('VOp', str, init_value='', sub_cb=self.set_v_op))
-        self._add_attribute(Attribute('VInt', str, init_value='', sub_cb=self.set_v_int))
-        self._add_attribute(Attribute('VExt', str, init_value='', sub_cb=self.set_v_ext))
-        self._add_attribute(Attribute('VReq', str, init_value=''))
+        self._add_attribute(Attribute('VOp', str, init_value=init_value, sub_cb=self.set_v_op))
+        self._add_attribute(Attribute('VInt', str, init_value=init_value, sub_cb=self.set_v_int))
+        self._add_attribute(Attribute('VExt', str, init_value=init_value, sub_cb=self.set_v_ext))
+        self._add_attribute(Attribute('VReq', str, init_value=init_value))
         self._add_attribute(Attribute('VOut', str, init_value=''))
         self._add_attribute(Attribute('VFbk', str, init_value=''))
         self._add_attribute(Attribute('Sync', bool, False))
