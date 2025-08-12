@@ -42,7 +42,6 @@ class StateMachine:
         self.act_state = StateCodes.idle
         self.prev_state = StateCodes.idle
 
-
     def set_command_op(self, value: int):
         if self.op_src_mode.attributes['StateOpAct'].value:
             self.command_execution(value)
@@ -145,6 +144,9 @@ class StateMachine:
             self._change_state_to(StateCodes.execute)
         elif self.act_state == StateCodes.resetting:
             self._change_state_to(StateCodes.idle)
+            # fix for commands being enabled when procedure is not set
+            self.disable_commands_if_no_procedure(
+                self.procedure_control.attributes['ProcedureReq'].value)
         elif self.act_state == StateCodes.holding:
             self._change_state_to(StateCodes.held)
         elif self.act_state == StateCodes.unholding:
