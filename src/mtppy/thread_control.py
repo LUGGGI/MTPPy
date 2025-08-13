@@ -75,9 +75,10 @@ class ThreadControl:
         try:
             try:
                 target_function()
-                # changes state for transitional states
-                # if self.state_change_function:
-                #     self.state_change_function()
+                # changes state for transitional states, only if the state is the current state.
+                if self.running_state is target_function.__name__:
+                    if self.state_change_function:
+                        self.state_change_function()
             # Catch InterruptedError thrown by stop events. Should not cause an error.
             except InterruptedError:
                 _logger.debug("Stop event was set, stopping thread execution.")

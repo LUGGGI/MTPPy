@@ -22,14 +22,14 @@ StateCodes = StateCodes()
 class Service(SUCServiceControl):
     """Represents a service of the PEA.
 
-    To create a new service, inherit from this class and implement at least the abstract methods. 
+    To create a new service, inherit from this class and implement at least the abstract methods.
     These include:
     - starting
     - execute
     - completing
 
-    Other methods can be overridden as needed. 
-    By default the higher level methods (on the right side) will call the lower level methods.  
+    Other methods can be overridden as needed.
+    By default the higher level methods (on the right side) will call the lower level methods.
     See the following diagram for how the methods are called:
 
     +------------+      +------------+      +------------+      +------------+      +------------+
@@ -38,9 +38,9 @@ class Service(SUCServiceControl):
                         +------------+      +------------+      +------------+      +------------+
                     ||  |   paused   |  <-  |    held    |  <-  |  stopped   |  <-  |  aborted   |
                         +------------+      +------------+      +------------+      +------------+
-    +------------+      +------------+      +------------+      
-    |  starting  |  <-  |  resuming  |  <-  | unholding  |      
-    +------------+      +------------+      +------------+   
+    +------------+      +------------+      +------------+
+    |  starting  |  <-  |  resuming  |  <-  | unholding  |
+    +------------+      +------------+      +------------+
 
     """
 
@@ -51,10 +51,11 @@ class Service(SUCServiceControl):
         Args:
             tag_name (str): Tag name of the service.
             tag_description (str): Tag description of the service.
-            exception_callback (Callable[[Exception], None]): Function to call 
+            exception_callback (Callable[[Exception], None]): Function to call
                 when an exception occurs in the thread.
         """
         super().__init__(tag_name, tag_description)
+        self.exception = None
 
         self.op_src_mode = OperationSourceMode()
 
@@ -68,7 +69,7 @@ class Service(SUCServiceControl):
                                           execution_routine=self.state_change_callback)
 
         self.thread_ctrl = ThreadControl(service_name=tag_name,
-                                         state_change_function=self.state_change(),
+                                         state_change_function=self.state_change,
                                          exception_callback=exception_callback)
 
         self.op_src_mode.add_enter_offline_callback(self.state_machine.command_en_ctrl.disable_all)
@@ -372,4 +373,3 @@ class Service(SUCServiceControl):
         else:
             pass
         # Reset the state machine to idle
-        self.state_change()
