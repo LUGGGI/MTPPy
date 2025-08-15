@@ -253,7 +253,11 @@ class OPCUAServerPEA:
         handler = Marshalling()
         handler.import_subscription_list(self.subscription_list)
         sub = self.opcua_server.create_subscription(500, handler)
-        handle = sub.subscribe_data_change(self.subscription_list.get_nodeid_list())
+        nodeid_list = self.subscription_list.get_nodeid_list()
+        if nodeid_list is None:
+            _logger.warning('No subscriptions to OPC UA nodes defined.')
+            return
+        handle = sub.subscribe_data_change(nodeid_list)
 
 
 class SubscriptionList:
