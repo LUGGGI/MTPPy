@@ -9,7 +9,7 @@ _logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
 
 
 class OPCUAServerPEA:
-    def __init__(self, mtp_generator: MTPGenerator = None, endpoint: str ='opc.tcp://127.0.0.1:4840/'):
+    def __init__(self, mtp_generator: MTPGenerator = None, endpoint: str = 'opc.tcp://127.0.0.1:4840/'):
         """
         Defines an OPC UA server for PEA.
 
@@ -19,12 +19,23 @@ class OPCUAServerPEA:
         """
         self.service_set = {}
         self.active_elements = {}
+        self.custom_data_assembly_sets: dict[str, dict[str, SUCDataAssembly]] = {}
         self.endpoint = endpoint
         self.opcua_server = None
         self.opcua_ns = 3
         self.subscription_list = SubscriptionList()
         self._init_opcua_server()
         self.mtp = mtp_generator
+
+        self._folders = ['configuration_parameters', 'procedures', 'procedure_parameters',
+                         'process_value_ins', 'report_values', 'process_value_outs']
+        """Folders that are created in the OPC UA server if found in a data assembly
+        even if they are not of type SUCDataAssembly."""
+        self._leaves = ['op_src_mode', 'state_machine', 'procedure_control']
+        """Folders that are created in the OPC UA server if found in a data assembly
+        even if they are not of type SUCDataAssembly.
+
+        No subfolders are created for them."""
 
     def add_service(self, service: Service):
         """
@@ -43,6 +54,52 @@ class OPCUAServerPEA:
             active_element (SUCActiveElement): Active element (e.g., AnaVlv, BinVlv, etc.).
         """
         self.active_elements[active_element.tag_name] = active_element
+
+    def add_custom_data_assembly_set(self, root_folder_name: str, data_assembly_set: dict[str, SUCDataAssembly]):
+        """
+        Add a custom data assembly to the PEA.
+
+        Args:
+            root_folder_name (str): Root folder name for the custom data assembly.
+            data_assembly (dict[str, SUCDataAssembly]): Custom data assembly instance.
+                Has to be a dictionary with folder names as keys and SUCDataAssembly instances as values.
+                If name is '', the data assembly is added to the root of the PEA.
+        """
+
+        if root_folder_name in self.custom_data_assembly_sets:
+            raise ValueError(f"Data assembly with tag name '{root_folder_name}' already exists.")
+        if not isinstance(data_assembly_set, dict) or data_assembly_set.__len__() == 0:
+            raise ValueError("Data assembly set must be a non-empty dictionary.")
+        if not isinstance(next(iter(data_assembly_set)), str):
+            raise TypeError("Data assembly set keys must be strings.")
+        if not isinstance(next(iter(data_assembly_set.values())), SUCDataAssembly):
+            raise TypeError("Data assembly set values must be instances of SUCDataAssembly.")
+
+        root_folder_name = (next(iter(data_assembly_set)) if root_folder_name == ''
+                            else root_folder_name)
+        self.custom_data_assembly_sets[root_folder_name] = data_assembly_set
+
+    def add_folders(self, folders: list[str]):
+        """
+        Folders that are created in the OPC UA server if found in a opcua object.
+        even if they are not of type SUCDataAssembly.
+
+        Args:
+            folders (list[str]): List of folder names.
+        """
+        self._folders.extend(folders)
+
+    def add_leaves(self, leaves: list[str]):
+        """
+        Leaves that are created in the OPC UA server if found in a opcua object.
+        even if they are not of type SUCDataAssembly.
+
+        No Subfolders are created for them.
+
+        Args:
+            leaves (list[str]): List of leaf names.
+        """
+        self._leaves.extend(leaves)
 
     def _init_opcua_server(self):
         """
@@ -109,13 +166,29 @@ class OPCUAServerPEA:
             _logger.info(f'- service {service.tag_name}')
             self._create_opcua_objects_for_folders(service, services_node_id, services_node)
 
-        act_elem_node_id = f'ns={ns};s=active_elements'
-        act_elem_node = server.add_folder(act_elem_node_id, "active_elements")
-        for active_element in self.active_elements.values():
-            _logger.info(f'- active element {active_element.tag_name}')
-            self._create_opcua_objects_for_folders(active_element, act_elem_node_id, act_elem_node)
+        if self.active_elements.__len__() > 0:
+            act_elem_node_id = f'ns={ns};s=active_elements'
+            act_elem_node = server.add_folder(act_elem_node_id, "active_elements")
+            for active_element in self.active_elements.values():
+                _logger.info(f'- active element {active_element.tag_name}')
+                self._create_opcua_objects_for_folders(
+                    active_element, act_elem_node_id, act_elem_node)
 
-        # add SupportedRoleClass to all InternalElements
+        # add custom data assemblies
+        for root_folder_name, data_assembly_set in self.custom_data_assembly_sets.items():
+            _logger.info(f'- custom data assembly {root_folder_name}')
+            if root_folder_name == next(iter(data_assembly_set)):
+                self._create_opcua_objects_for_folders(
+                    data_assembly_set[root_folder_name], f"{ns};s={root_folder_name}", server, root_folder_name)
+            else:
+                custom_da_node_id = f'ns={ns};s={root_folder_name}'
+                custom_da_node = server.add_folder(custom_da_node_id, root_folder_name)
+                for data_assembly in data_assembly_set.values():
+                    _logger.info(f'-- data assembly {data_assembly.tag_name}')
+                    self._create_opcua_objects_for_folders(
+                        data_assembly, custom_da_node_id, custom_da_node)
+
+                # add SupportedRoleClass to all InternalElements
         if self.mtp:
             self.mtp.apply_add_supported_role_class()
 
@@ -124,7 +197,9 @@ class OPCUAServerPEA:
             _logger.info(f'MTP manifest export to {self.mtp.export_path}')
             self.mtp.export_manifest()
 
-    def _create_opcua_objects_for_folders(self, data_assembly: SUCDataAssembly, parent_opcua_prefix: str, parent_opcua_object):
+    def _create_opcua_objects_for_folders(self,
+                                          data_assembly: SUCDataAssembly, parent_opcua_prefix: str,
+                                          parent_opcua_object, name: str = None):
         """
         Iterates over data assemblies to create OPC UA folders.
 
@@ -132,16 +207,16 @@ class OPCUAServerPEA:
             data_assembly (SUCDataAssembly): Data assembly.
             parent_opcua_prefix (str): Prefix to add in front of the data assembly tag.
             parent_opcua_object: Parent OPC UA node where the data assembly is added.
+            name (str): Name of the data assembly. If None, the tag name of the data assembly is used.
         """
-        da_node_id = f'{parent_opcua_prefix}.{data_assembly.tag_name}'
-        da_node = parent_opcua_object.add_folder(da_node_id, data_assembly.tag_name)
+        if name is None:
+            name = data_assembly.tag_name
+        da_node_id = f'{parent_opcua_prefix}.{name}'
+        da_node = parent_opcua_object.add_folder(da_node_id, name)
+        _logger.debug(f'OPCUA Folder: {da_node_id}, Name: {name}')
 
         # type of data assembly (e.g. services, active_elements, procedures etc.)
         da_type = parent_opcua_prefix.split('=')[-1].split('.')[-1]
-
-        folders = ['configuration_parameters', 'procedures','procedure_parameters',
-                   'process_value_ins', 'report_values', 'process_value_outs']
-        leaves = ['op_src_mode', 'state_machine', 'procedure_control']
 
         # create instance of  ServiceControl, HealthStateView, DIntServParam etc.
         if self.mtp:
@@ -151,25 +226,24 @@ class OPCUAServerPEA:
 
         if self.mtp:
             link_id = self.mtp.random_id_generator()
-            if da_type == 'services' or da_type in folders:
+            if da_type == 'services' or da_type in self._folders:
                 link_id = self.mtp.create_components_for_services(data_assembly, da_type)
         else:
             link_id = None
 
+        # Add attributes of data assembly
         if hasattr(data_assembly, 'attributes'):
             self._create_opcua_objects_for_leaves(data_assembly, da_node_id, da_node, instance)
 
-        for section_name in folders + leaves:
-            if not hasattr(data_assembly, section_name):
+        # Find any variable of data_assembly that is of type SUCDataAssembly
+        # and create corresponding folders and leaves for it
+        for variable_name, value in self.__get_objects_attributes(data_assembly).items():
+            if not isinstance(value, SUCDataAssembly) and variable_name not in self._folders + self._leaves:
                 continue
-            section = eval(f'data_assembly.{section_name}')
-            section_node_id = f'{da_node_id}.{section_name}'
-            section_node = da_node.add_folder(section_node_id, section_name)
-            if section_name in folders:
-                for parameter in eval(f'data_assembly.{section_name}.values()'):
-                    self._create_opcua_objects_for_folders(parameter, section_node_id, section_node)
-            if section_name in leaves:
-                self._create_opcua_objects_for_leaves(section, section_node_id, section_node, instance)
+            if name in self._leaves:
+                continue  # do not create folders for leaves
+            folder_name = value.tag_name if hasattr(value, 'tag_name') else variable_name
+            self._create_opcua_objects_for_folders(value, da_node_id, da_node, folder_name)
 
         # create linked obj between instance and service component
         if self.mtp:
@@ -206,18 +280,19 @@ class OPCUAServerPEA:
                 linked_id = None
 
             """
-            add attributes of data assembly to corresponding instance under InstanceList 
+            add attributes of data assembly to corresponding instance under InstanceList
             e.g.: attributes of services belong to InstanceList/ServiceControl
 
-            exception: some attributes of procedure ('ProcedureId', 'IsSelfCompleting', 'IsDefault') should be 
-            added to InstanceHierarchy_Service/service/procedure. The other attributes of procedure should belong to 
+            exception: some attributes of procedure ('ProcedureId', 'IsSelfCompleting', 'IsDefault') should be
+            added to InstanceHierarchy_Service/service/procedure. The other attributes of procedure should belong to
             InstanceList/HeathStateView
             """
             if type(opcua_object).__name__ == 'Procedure' and attr.name in ['ProcedureId', 'IsSelfCompleting', 'IsDefault']:
                 pass
             else:
                 if self.mtp:
-                    self.mtp.add_attr_to_instance(par_instance, attr.name, attr.init_value, linked_id)
+                    self.mtp.add_attr_to_instance(
+                        par_instance, attr.name, attr.init_value, linked_id)
 
             # We subscribe to nodes that are writable attributes
             if attr.sub_cb is not None:
@@ -258,6 +333,23 @@ class OPCUAServerPEA:
             _logger.warning('No subscriptions to OPC UA nodes defined.')
             return
         handle = sub.subscribe_data_change(nodeid_list)
+
+    def __get_objects_attributes(self, object) -> dict:
+        """
+        Get all attributes of the given object.
+
+        Args:
+            object: any python object.
+        """
+        if isinstance(object, dict):
+            return object
+        if isinstance(object, list):
+            # return a dictionary with index as key
+            return {f'{i}': item for i, item in enumerate(object)}
+        try:
+            return vars(object)
+        except TypeError:
+            return {}
 
 
 class SubscriptionList:
