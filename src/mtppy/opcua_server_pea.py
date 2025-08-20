@@ -1,5 +1,5 @@
 import logging
-from opcua import Server, ua
+from opcua import Server, ua, Node
 from mtppy.communication_object import OPCUACommunicationObject
 from mtppy.service import Service
 from mtppy.suc_data_assembly import SUCDataAssembly, SUCActiveElement
@@ -177,9 +177,10 @@ class OPCUAServerPEA:
         # add custom data assemblies
         for root_folder_name, data_assembly_set in self.custom_data_assembly_sets.items():
             _logger.info(f'- custom data assembly {root_folder_name}')
+            # if root_folder_name is the same as the first key add to root
             if root_folder_name == next(iter(data_assembly_set)):
                 self._create_opcua_objects_for_folders(
-                    data_assembly_set[root_folder_name], f"{ns};s={root_folder_name}", server, root_folder_name)
+                    data_assembly_set[root_folder_name], f"ns={ns};s={root_folder_name}", server, root_folder_name)
             else:
                 custom_da_node_id = f'ns={ns};s={root_folder_name}'
                 custom_da_node = server.add_folder(custom_da_node_id, root_folder_name)
@@ -197,9 +198,9 @@ class OPCUAServerPEA:
             _logger.info(f'MTP manifest export to {self.mtp.export_path}')
             self.mtp.export_manifest()
 
-    def _create_opcua_objects_for_folders(self,
-                                          data_assembly: SUCDataAssembly, parent_opcua_prefix: str,
-                                          parent_opcua_object, name: str = None):
+    def _create_opcua_objects_for_folders(self, data_assembly: SUCDataAssembly,
+                                          parent_opcua_prefix: str, parent_opcua_object: Node,
+                                          name: str = None):
         """
         Iterates over data assemblies to create OPC UA folders.
 
