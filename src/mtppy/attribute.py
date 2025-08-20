@@ -26,7 +26,11 @@ class Attribute:
         self.init_value = corrected_value
         self.value = corrected_value
         self.comm_obj = None
-        self.sub_cb: Callable[[Any], None] = sub_cb
+        self.sub_cb: Callable[[Any], None] = None
+        self.sub_cbs: dict[str, Callable[[Any], None]] = {}
+        if sub_cb is not None:
+            self.sub_cbs[self.name] = sub_cb
+            self.sub_cb = self._call_callbacks
 
     def set_value(self, value):
         """
@@ -49,6 +53,16 @@ class Attribute:
 
         _logger.debug(f'New value for {self.name} is {self.value}')
         return True
+
+    def _call_callbacks(self, value):
+        """
+        Call all subscription callbacks with the new value.
+
+        Args:
+            value (type): New value to pass to the callbacks.
+        """
+        for cb in self.sub_cbs.values():
+            cb(value)
 
     def _correct_type(self, value):
         """
@@ -78,18 +92,39 @@ class Attribute:
         """
         self.comm_obj = communication_object
 
-    def attach_subscription_callback(self, sub_cb: Callable[[Any], None]):
+    def attach_subscription_callback(self, sub_cb: Callable[[Any], None], cb_name: str = None):
         """
         Attach a subscription callback to the attribute.
 
         Args:
             sub_cb (Callable[[Any], None]): 
                 Subscription callback function that will be called when the value changes.
+            cb_name (str, optional): Name of the callback. 
+                If not provided, the attribute name will be used.
         """
-        self.sub_cb = sub_cb
+        if cb_name is None:
+            cb_name = self.name
+        self.sub_cbs[cb_name] = sub_cb
+        _logger.debug(f'Subscription callback {cb_name} added to attribute {self.name}')
 
-    def remove_subscription_callback(self):
+        # add the callback to the sub_cb
+        self.sub_cb = self._call_callbacks
+
+    def remove_subscription_callback(self, cb_name: str = None):
         """
         Remove the subscription callback from the attribute.
+
+        Args:
+            cb_name (str, optional): Name of the callback to remove. 
+            If not provided, the callback with the attribute name will be removed.
         """
-        self.sub_cb = None
+        if cb_name is None:
+            cb_name = self.name
+
+        if cb_name in self.sub_cbs:
+            self.sub_cbs.pop(cb_name)
+            _logger.debug(f'Subscription callback {cb_name} removed from attribute {self.name}')
+
+        # remove the sub_cb if no callbacks left
+        if self.sub_cbs == {}:
+            self.sub_cb = None
