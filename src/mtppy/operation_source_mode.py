@@ -6,7 +6,7 @@ _logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
 
 
 class OperationSourceMode:
-    def __init__(self):
+    def __init__(self, name_of_parent: str = ''):
         """
         Represents the operation and source modes control.
         """
@@ -30,7 +30,7 @@ class OperationSourceMode:
             'SrcIntAct': Attribute('SrcIntAct', bool, init_value=False),
             'SrcExtAct': Attribute('SrcExtAct', bool, init_value=False)
         }
-        self.switch_to_offline_mode_allowed = False
+        self.switch_to_offline_mode_allowed = True
 
         self.enter_offline_callbacks = []
         self.exit_offline_callbacks = []
@@ -40,6 +40,9 @@ class OperationSourceMode:
 
         self.enter_automatic_callbacks = []
         self.exit_automatic_callbacks = []
+
+        self.linked_op_src_modes = []
+        self._name_of_parent = f"{name_of_parent}: " if name_of_parent != '' else ''
 
     def allow_switch_to_offline_mode(self, allow_flag: bool):
         self.switch_to_offline_mode_allowed = allow_flag
@@ -64,32 +67,32 @@ class OperationSourceMode:
 
     def _enter_off(self):
         if len(self.enter_offline_callbacks):
-            _logger.debug('Applying enter offline mode callbacks')
+            _logger.debug(f'{self._name_of_parent}Applying enter offline mode callbacks')
             [cb() for cb in self.enter_offline_callbacks]
 
     def _exit_off(self):
         if len(self.exit_offline_callbacks):
-            _logger.debug('Applying exit offline mode callbacks')
+            _logger.debug(f'{self._name_of_parent}Applying exit offline mode callbacks')
             [cb() for cb in self.exit_offline_callbacks]
 
     def _enter_op(self):
         if len(self.enter_operator_callbacks):
-            _logger.debug('Applying enter operator mode callbacks')
+            _logger.debug(f'{self._name_of_parent}Applying enter operator mode callbacks')
             [cb() for cb in self.enter_operator_callbacks]
 
     def _exit_op(self):
         if len(self.exit_operator_callbacks):
-            _logger.debug('Applying exit operator mode callbacks')
+            _logger.debug(f'{self._name_of_parent}Applying exit operator mode callbacks')
             [cb() for cb in self.exit_operator_callbacks]
 
     def _enter_aut(self):
         if len(self.enter_automatic_callbacks):
-            _logger.debug('Applying enter automatic mode callbacks')
+            _logger.debug(f'{self._name_of_parent}Applying enter automatic mode callbacks')
             [cb() for cb in self.enter_automatic_callbacks]
 
     def _exit_aut(self):
         if len(self.exit_automatic_callbacks):
-            _logger.debug('Applying exit automatic mode callbacks')
+            _logger.debug(f'{self._name_of_parent}Applying exit automatic mode callbacks')
             [cb() for cb in self.exit_automatic_callbacks]
 
     def _opmode_to_off(self):
@@ -107,7 +110,7 @@ class OperationSourceMode:
             self._exit_aut()
         self._enter_off()
 
-        _logger.debug('Operation mode is now off')
+        _logger.debug(f'{self._name_of_parent}Operation mode is now off')
         self._src_to_off()
 
     def _opmode_to_aut(self):
@@ -125,7 +128,7 @@ class OperationSourceMode:
             self._exit_op()
         self._enter_aut()
 
-        _logger.debug('Operation mode is now aut')
+        _logger.debug(f'{self._name_of_parent}Operation mode is now aut')
         self._src_to_int()
 
     def _opmode_to_op(self):
@@ -142,90 +145,132 @@ class OperationSourceMode:
             self._exit_aut()
         self._enter_op()
 
-        _logger.debug('Operation mode is now op')
+        _logger.debug(f'{self._name_of_parent}Operation mode is now op')
         self._src_to_off()
 
+    def add_linked_op_src_mode(self, linked_op_src_mode):
+        """
+        Adds a linked operation source mode.
+
+        Args:
+            linked_op_src_mode (OperationSourceMode): The linked operation source mode to add.
+        """
+        if isinstance(linked_op_src_mode, OperationSourceMode):
+            self.linked_op_src_modes.append(linked_op_src_mode)
+        else:
+            raise TypeError("linked_op_src_mode must be an instance of OperationSourceMode")
+
+    def _update_linked_op_src_modes(self, attribute_name: str, value: bool):
+        """
+        Updates the linked operation source modes based on the attribute change.
+
+        Args:
+            attribute_name (str): The name of the attribute that changed.
+            value (bool): The new value of the attribute.
+        """
+        if self.linked_op_src_modes == []:
+            return
+        # if value is False:
+        #     return
+        _logger.debug(
+            f'{self._name_of_parent}Updating linked op_src_modes for attribute {attribute_name} to {value}')
+        linked_op_src_mode: OperationSourceMode
+        for linked_op_src_mode in self.linked_op_src_modes:
+            linked_op_src_mode.attributes[attribute_name].set_value(value)
+
     def set_state_channel(self, value: bool):
-        _logger.debug('Operation mode channel is now %s' % value)
+        _logger.debug(f'{self._name_of_parent}Operation mode channel is now %s' % value)
+        self._update_linked_op_src_modes('StateChannel', value)
 
     def set_state_aut_aut(self, value: bool):
-        _logger.debug(f'StateAutAut set to {value}')
+        _logger.debug(f'{self._name_of_parent}StateAutAut set to {value}')
         if self.attributes['StateChannel'].value and value:
             if self.attributes['StateOffAct'].value or self.attributes['StateOpAct'].value:
                 self._opmode_to_aut()
+        self._update_linked_op_src_modes('StateAutAut', value)
 
     def set_state_aut_op(self, value: bool):
-        _logger.debug(f'StateAutOp set to {value}')
+        _logger.debug(f'{self._name_of_parent}StateAutOp set to {value}')
         if not self.attributes['StateChannel'].value and value:
             if self.attributes['StateOffAct'].value or self.attributes['StateOpAct'].value:
                 self._opmode_to_aut()
                 self.attributes['StateAutOp'].set_value(False)
+        self._update_linked_op_src_modes('StateAutOp', value)
 
     def set_state_off_aut(self, value: bool):
-        _logger.debug(f'StateOffAut set to {value}')
+        _logger.debug(f'{self._name_of_parent}StateOffAut set to {value}')
         if self.attributes['StateChannel'].value and value and self.switch_to_offline_mode_allowed:
             if self.attributes['StateAutAct'].value or self.attributes['StateOpAct'].value:
                 self._opmode_to_off()
+        self._update_linked_op_src_modes('StateOffAut', value)
 
     def set_state_off_op(self, value: bool):
-        _logger.debug(f'StateOffOp set to {value}')
+        _logger.debug(f'{self._name_of_parent}StateOffOp set to {value}')
         if not self.attributes['StateChannel'].value and value and self.switch_to_offline_mode_allowed:
             if self.attributes['StateAutAct'].value or self.attributes['StateOpAct'].value:
                 self._opmode_to_off()
                 self.attributes['StateOffOp'].set_value(False)
+        self._update_linked_op_src_modes('StateOffOp', value)
 
     def set_state_op_aut(self, value: bool):
-        _logger.debug(f'StateOpAut set to {value}')
+        _logger.debug(f'{self._name_of_parent}StateOpAut set to {value}')
         if self.attributes['StateChannel'].value and value:
             if self.attributes['StateOffAct'].value or self.attributes['StateOpAct'].value:
                 self._opmode_to_op()
+        self._update_linked_op_src_modes('StateOpAut', value)
 
     def set_state_op_op(self, value: bool):
-        _logger.debug(f'StateOpOp set to {value}')
+        _logger.debug(f'{self._name_of_parent}StateOpOp set to {value}')
         if not self.attributes['StateChannel'].value and value:
             if self.attributes['StateOffAct'].value or self.attributes['StateAutAct'].value:
                 self._opmode_to_op()
                 self.attributes['StateOpOp'].set_value(False)
+        self._update_linked_op_src_modes('StateOpOp', value)
 
     def _src_to_off(self):
         self.attributes['SrcIntAct'].set_value(False)
         self.attributes['SrcExtAct'].set_value(False)
-        _logger.debug('Source mode is now off')
+        _logger.debug(f'{self._name_of_parent}Source mode is now off')
 
     def _src_to_int(self):
         self.attributes['SrcIntAct'].set_value(True)
         self.attributes['SrcExtAct'].set_value(False)
-        _logger.debug('Source mode is now int')
+        _logger.debug(f'{self._name_of_parent}Source mode is now int')
 
     def _src_to_ext(self):
         self.attributes['SrcIntAct'].set_value(False)
         self.attributes['SrcExtAct'].set_value(True)
-        _logger.debug('Source mode is now ext')
+        _logger.debug(f'{self._name_of_parent}Source mode is now ext')
 
     def set_src_channel(self, value: bool):
-        _logger.debug('Source mode channel is now %s' % value)
+        _logger.debug(f'{self._name_of_parent}Source mode channel is now %s' % value)
+        self._update_linked_op_src_modes('SrcChannel', value)
 
     def set_src_ext_aut(self, value: bool):
         if not self.attributes['StateOffAct'].value and value:
             if self.attributes['SrcChannel'].value:
                 self._src_to_ext()
+        self._update_linked_op_src_modes('SrcExtAut', value)
 
     def set_src_ext_op(self, value: bool):
         if not self.attributes['StateOffAct'].value and value:
             if not self.attributes['SrcChannel'].value:
                 self._src_to_ext()
                 self.attributes['SrcExtOp'].set_value(False)
+        self._update_linked_op_src_modes('SrcExtOp', value)
 
     def set_src_int_aut(self, value: bool):
         if not self.attributes['StateOffAct'].value and value:
             if self.attributes['SrcChannel'].value:
                 self._src_to_int()
+        self._update_linked_op_src_modes('SrcIntAut', value)
 
     def set_src_int_op(self, value: bool):
         if not self.attributes['StateOffAct'].value and value:
             if not self.attributes['SrcChannel'].value:
                 self._src_to_int()
                 self.attributes['SrcIntOp'].set_value(False)
+        self._update_linked_op_src_modes('SrcIntOp', value)
 
 
 class OperationSourceModeActiveElements(OperationSourceMode):

@@ -57,7 +57,7 @@ class Service(SUCServiceControl):
         super().__init__(tag_name, tag_description)
         self.exception = None
 
-        self.op_src_mode = OperationSourceMode()
+        self.op_src_mode = OperationSourceMode(tag_name)
 
         self.configuration_parameters = {}
 

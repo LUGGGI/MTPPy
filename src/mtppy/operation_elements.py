@@ -143,7 +143,7 @@ class DIntServParam(SUCOperationElement):
         """
         super().__init__(tag_name, tag_description)
 
-        self.op_src_mode = OperationSourceMode()
+        self.op_src_mode = OperationSourceMode(tag_name)
 
         self.v_min = v_min
         self.v_max = v_max
