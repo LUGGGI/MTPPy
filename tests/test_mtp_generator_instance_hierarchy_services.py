@@ -7,7 +7,7 @@ import pytest
 from mtppy.mtp_generator import MTPGenerator
 from mtppy.service import Service
 from mtppy.procedure import Procedure
-from mtppy.operation_elements import *
+from mtppy.parameter_elements import *
 from mtppy.indicator_elements import *
 from mtppy.active_elements import *
 

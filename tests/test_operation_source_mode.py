@@ -1,4 +1,4 @@
-from src.mtppy.operation_elements import OperationSourceMode
+from mtppy.parameter_elements import OperationSourceMode
 
 
 def init_op_source_mode(op_mode='off',

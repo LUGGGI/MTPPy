@@ -157,6 +157,9 @@ class MTPGenerator:
         elif instance_basic_type == 'SUCActiveElement':
             name = instance_name
             reference_path = 'MTPDataObjectSUCLib/DataAssembly/ActiveElement/' + instance_type_name
+        elif instance_basic_type == 'SUCParameterElement':
+            name = instance_name
+            reference_path = 'MTPDataObjectSUCLib/DataAssembly/ParameterElement/' + instance_type_name
         else:
             raise TypeError('data assembly type error')
 

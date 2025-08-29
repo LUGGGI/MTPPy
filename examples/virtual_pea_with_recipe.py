@@ -2,7 +2,7 @@ from mtppy.opcua_server_pea import OPCUAServerPEA
 from mtppy.mtp_generator import MTPGenerator
 from mtppy.service import Service
 from mtppy.procedure import Procedure
-from mtppy.operation_elements import *
+from mtppy.parameter_elements import *
 from mtppy.indicator_elements import *
 
 import time

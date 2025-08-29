@@ -21,22 +21,22 @@ class Procedure(SUCServiceProcedure):
         if procedure_id <= 0:
             raise ValueError(f"{tag_name}: Procedure ID can't be equal or less than 0.")
         super().__init__(procedure_id, tag_name, tag_description, is_self_completing, is_default)
-        self.procedure_parameters: dict[str, SUCOperationElement] = {}
+        self.procedure_parameters: dict[str, SUCParameterElement] = {}
         self.process_value_ins = {}
         self.report_values: dict[str, SUCIndicatorElement] = {}
         self.process_value_outs: dict[str, SUCIndicatorElement] = {}
 
-    def add_procedure_parameter(self, procedure_parameter: SUCOperationElement):
+    def add_procedure_parameter(self, procedure_parameter: SUCParameterElement):
         """
         Adds a procedure parameter to the procedure.
 
         Args:
-            procedure_parameter (SUCOperationElement): Procedure parameter.
+            procedure_parameter (SUCParameterElement): Procedure parameter.
 
         Raises:
-            TypeError: If procedure_parameter is not an instance of SUCOperationElement.
+            TypeError: If procedure_parameter is not an instance of SUCParameterElement.
         """
-        if isinstance(procedure_parameter, SUCOperationElement):
+        if isinstance(procedure_parameter, SUCParameterElement):
             self.procedure_parameters[procedure_parameter.tag_name] = procedure_parameter
         else:
             raise TypeError()

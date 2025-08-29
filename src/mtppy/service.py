@@ -12,7 +12,7 @@ from mtppy.state_machine import StateMachine
 from mtppy.procedure_control import ProcedureControl
 from mtppy.state_codes import StateCodes
 from mtppy.procedure import Procedure
-from mtppy.suc_data_assembly import SUCOperationElement
+from mtppy.suc_data_assembly import SUCParameterElement
 
 _logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
 
@@ -182,12 +182,12 @@ class Service(SUCServiceControl):
         """
         self.state_machine.state_change()
 
-    def add_configuration_parameter(self, configuration_parameter: SUCOperationElement):
+    def add_configuration_parameter(self, configuration_parameter: SUCParameterElement):
         """
         Adds a configuration parameter to the service.
 
         Args:
-            configuration_parameter (SUCOperationElement): Configuration parameter to add.
+            configuration_parameter (SUCParameterElement): Configuration parameter to add.
         """
         self.configuration_parameters[configuration_parameter.tag_name] = configuration_parameter
 

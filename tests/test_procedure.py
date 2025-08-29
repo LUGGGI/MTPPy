@@ -1,5 +1,5 @@
 from src.mtppy.procedure import Procedure
-from src.mtppy.operation_elements import *
+from mtppy.parameter_elements import *
 from src.mtppy.indicator_elements import *
 
 operation_elements = [AnaServParam('serv_param_ana', v_min=0, v_max=50, v_scl_min=0, v_scl_max=10, v_unit=23),

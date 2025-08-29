@@ -29,7 +29,7 @@ class SUCIndicatorElement(SUCDataAssembly):
         pass
 
 
-class SUCOperationElement(SUCDataAssembly):
+class SUCParameterElement(SUCDataAssembly):
     def __init__(self, tag_name: str, tag_description: str):
         super().__init__(tag_name, tag_description)
         self._add_attribute(Attribute('OSLevel', int, init_value=0))

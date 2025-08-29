@@ -2,12 +2,12 @@ import logging
 
 from mtppy.attribute import Attribute
 from mtppy.operation_source_mode import OperationSourceMode
-from mtppy.suc_data_assembly import SUCOperationElement
+from mtppy.suc_data_assembly import SUCParameterElement
 
 _logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
 
 
-class AnaServParam(SUCOperationElement):
+class AnaServParam(SUCParameterElement):
     def __init__(self, tag_name: str, tag_description: str = '', v_min: float = 0, v_max: float = 100,
                  v_scl_min: float = 0, v_scl_max: float = 100, v_unit: int = 0, init_value: float = None):
         """
@@ -80,7 +80,7 @@ class AnaServParam(SUCOperationElement):
         _logger.debug('VFbk set to %s' % value)
 
 
-class BinServParam(SUCOperationElement):
+class BinServParam(SUCParameterElement):
     def __init__(self, tag_name: str, tag_description: str = '', v_state_0: str = 'false', v_state_1: str = 'true', init_value: bool = False):
         """
         Binary Service Parameter (BinServParam). Parameter names correspond attribute names in VDI/VDE/NAMUR 2658.
@@ -135,7 +135,7 @@ class BinServParam(SUCOperationElement):
         _logger.debug('VFbk set to %s' % value)
 
 
-class DIntServParam(SUCOperationElement):
+class DIntServParam(SUCParameterElement):
     def __init__(self, tag_name: str, tag_description: str = '', v_min: int = 0, v_max: int = 100, v_scl_min: int = 0,
                  v_scl_max: int = 100, v_unit: int = 0, init_value: int = None):
         """
@@ -210,7 +210,7 @@ class DIntServParam(SUCOperationElement):
         _logger.debug('VFbk set to %s' % value)
 
 
-class StringServParam(SUCOperationElement):
+class StringServParam(SUCParameterElement):
     def __init__(self, tag_name: str, tag_description: str = '', init_value: str = ''):
         """
         String Service Parameter (StringServParam). Parameter names correspond attribute names in VDI/VDE/NAMUR 2658.
