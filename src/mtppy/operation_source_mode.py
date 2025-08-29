@@ -197,7 +197,6 @@ class OperationSourceMode:
                 self._opmode_to_aut()
         if value:
             self.attributes['StateAutOp'].set_value(False)
-        else:
             self._update_linked_op_src_modes('StateAutOp', value)
 
     def set_state_off_aut(self, value: bool):
@@ -214,7 +213,6 @@ class OperationSourceMode:
                 self._opmode_to_off()
         if value:
             self.attributes['StateOffOp'].set_value(False)
-        else:
             self._update_linked_op_src_modes('StateOffOp', value)
 
     def set_state_op_aut(self, value: bool):
@@ -231,7 +229,6 @@ class OperationSourceMode:
                 self._opmode_to_op()
         if value:
             self.attributes['StateOpOp'].set_value(False)
-        else:
             self._update_linked_op_src_modes('StateOpOp', value)
 
     def _src_to_off(self):
@@ -268,7 +265,6 @@ class OperationSourceMode:
                 self._src_to_ext()
         if value:
             self.attributes['SrcExtOp'].set_value(False)
-        else:
             self._update_linked_op_src_modes('SrcExtOp', value)
 
     def set_src_int_aut(self, value: bool):
@@ -283,7 +279,6 @@ class OperationSourceMode:
                 self._src_to_int()
         if value:
             self.attributes['SrcIntOp'].set_value(False)
-        else:
             self._update_linked_op_src_modes('SrcIntOp', value)
 
 
