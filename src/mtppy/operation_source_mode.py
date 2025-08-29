@@ -180,6 +180,9 @@ class OperationSourceMode:
 
     def set_state_channel(self, value: bool):
         _logger.debug(f'{self._name_of_parent}Operation mode channel is now %s' % value)
+        if self.attributes['StateChannel'].value == value:
+            return
+        self.attributes['StateChannel'].set_value(value)
         self._update_linked_op_src_modes('StateChannel', value)
 
     def set_state_aut_aut(self, value: bool):
@@ -194,7 +197,8 @@ class OperationSourceMode:
         if not self.attributes['StateChannel'].value and value:
             if self.attributes['StateOffAct'].value or self.attributes['StateOpAct'].value:
                 self._opmode_to_aut()
-                self.attributes['StateAutOp'].set_value(False)
+        if value:
+            self.attributes['StateAutOp'].set_value(False)
         self._update_linked_op_src_modes('StateAutOp', value)
 
     def set_state_off_aut(self, value: bool):
@@ -209,7 +213,8 @@ class OperationSourceMode:
         if not self.attributes['StateChannel'].value and value and self.switch_to_offline_mode_allowed:
             if self.attributes['StateAutAct'].value or self.attributes['StateOpAct'].value:
                 self._opmode_to_off()
-                self.attributes['StateOffOp'].set_value(False)
+        if value:
+            self.attributes['StateOffOp'].set_value(False)
         self._update_linked_op_src_modes('StateOffOp', value)
 
     def set_state_op_aut(self, value: bool):
@@ -224,7 +229,8 @@ class OperationSourceMode:
         if not self.attributes['StateChannel'].value and value:
             if self.attributes['StateOffAct'].value or self.attributes['StateAutAct'].value:
                 self._opmode_to_op()
-                self.attributes['StateOpOp'].set_value(False)
+        if value:
+            self.attributes['StateOpOp'].set_value(False)
         self._update_linked_op_src_modes('StateOpOp', value)
 
     def _src_to_off(self):
@@ -244,6 +250,9 @@ class OperationSourceMode:
 
     def set_src_channel(self, value: bool):
         _logger.debug(f'{self._name_of_parent}Source mode channel is now %s' % value)
+        if self.attributes['SrcChannel'].value == value:
+            return
+        self.attributes['SrcChannel'].set_value(value)
         self._update_linked_op_src_modes('SrcChannel', value)
 
     def set_src_ext_aut(self, value: bool):
@@ -256,7 +265,8 @@ class OperationSourceMode:
         if not self.attributes['StateOffAct'].value and value:
             if not self.attributes['SrcChannel'].value:
                 self._src_to_ext()
-                self.attributes['SrcExtOp'].set_value(False)
+        if value:
+            self.attributes['SrcExtOp'].set_value(False)
         self._update_linked_op_src_modes('SrcExtOp', value)
 
     def set_src_int_aut(self, value: bool):
@@ -269,7 +279,8 @@ class OperationSourceMode:
         if not self.attributes['StateOffAct'].value and value:
             if not self.attributes['SrcChannel'].value:
                 self._src_to_int()
-                self.attributes['SrcIntOp'].set_value(False)
+        if value:
+            self.attributes['SrcIntOp'].set_value(False)
         self._update_linked_op_src_modes('SrcIntOp', value)
 
 
@@ -327,4 +338,5 @@ class OperationSourceModeActiveElements(OperationSourceMode):
         if not self.attributes['StateOffAct'].value and value:
             if not self.attributes['SrcChannel'].value:
                 self._src_to_man()
-                self.attributes['SrcManOp'].set_value(False)
+        if value:
+            self.attributes['SrcManOp'].set_value(False)
