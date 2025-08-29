@@ -170,8 +170,6 @@ class OperationSourceMode:
         """
         if self.linked_op_src_modes == []:
             return
-        # if value is False:
-        #     return
         _logger.debug(
             f'{self._name_of_parent}Updating linked op_src_modes for attribute {attribute_name} to {value}')
         linked_op_src_mode: OperationSourceMode
@@ -199,7 +197,8 @@ class OperationSourceMode:
                 self._opmode_to_aut()
         if value:
             self.attributes['StateAutOp'].set_value(False)
-        self._update_linked_op_src_modes('StateAutOp', value)
+        else:
+            self._update_linked_op_src_modes('StateAutOp', value)
 
     def set_state_off_aut(self, value: bool):
         _logger.debug(f'{self._name_of_parent}StateOffAut set to {value}')
@@ -215,7 +214,8 @@ class OperationSourceMode:
                 self._opmode_to_off()
         if value:
             self.attributes['StateOffOp'].set_value(False)
-        self._update_linked_op_src_modes('StateOffOp', value)
+        else:
+            self._update_linked_op_src_modes('StateOffOp', value)
 
     def set_state_op_aut(self, value: bool):
         _logger.debug(f'{self._name_of_parent}StateOpAut set to {value}')
@@ -231,7 +231,8 @@ class OperationSourceMode:
                 self._opmode_to_op()
         if value:
             self.attributes['StateOpOp'].set_value(False)
-        self._update_linked_op_src_modes('StateOpOp', value)
+        else:
+            self._update_linked_op_src_modes('StateOpOp', value)
 
     def _src_to_off(self):
         self.attributes['SrcIntAct'].set_value(False)
@@ -267,7 +268,8 @@ class OperationSourceMode:
                 self._src_to_ext()
         if value:
             self.attributes['SrcExtOp'].set_value(False)
-        self._update_linked_op_src_modes('SrcExtOp', value)
+        else:
+            self._update_linked_op_src_modes('SrcExtOp', value)
 
     def set_src_int_aut(self, value: bool):
         if not self.attributes['StateOffAct'].value and value:
@@ -281,7 +283,8 @@ class OperationSourceMode:
                 self._src_to_int()
         if value:
             self.attributes['SrcIntOp'].set_value(False)
-        self._update_linked_op_src_modes('SrcIntOp', value)
+        else:
+            self._update_linked_op_src_modes('SrcIntOp', value)
 
 
 class OperationSourceModeActiveElements(OperationSourceMode):
