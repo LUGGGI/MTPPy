@@ -282,71 +282,108 @@ class OperationSourceMode:
             self._update_linked_op_src_modes('SrcIntOp', value)
 
 
-class OperationSourceModeActiveElements(OperationSourceMode):
-    def __init__(self):
+class OperationMode():
+    def __init__(self, name_of_parent: str = ''):
         """
-        Represents the operation and source model control for active elements.
+        Represents the operation mode control. Used by active elements.
+        (Table 15 VDI/VDE/NAMUR 2658-3).
         """
-        super().__init__()
-        self.attributes = {
-            'StateChannel': Attribute('StateChannel', bool, init_value=False, sub_cb=self.set_state_channel),
+        if not hasattr(self, 'attributes'):
+            self.attributes: dict['str', Attribute] = {}
+        self.attributes.update({
+            # --- Operation mode control ---
+            'StateChannel': Attribute('StateChannel', bool, init_value=True, sub_cb=self.set_state_channel),
             'StateOffAut': Attribute('StateOffAut', bool, init_value=False, sub_cb=self.set_state_off_aut),
-            'StateOpAut': Attribute('StateOpAut', bool, init_value=False, sub_cb=self.set_state_op_aut),
+            'StateOpAut': Attribute('StateOpAut', bool, init_value=True, sub_cb=self.set_state_op_aut),
             'StateAutAut': Attribute('StateAutAut', bool, init_value=False, sub_cb=self.set_state_aut_aut),
             'StateOffOp': Attribute('StateOffOp', bool, init_value=False, sub_cb=self.set_state_off_op),
             'StateOpOp': Attribute('StateOpOp', bool, init_value=False, sub_cb=self.set_state_op_op),
             'StateAutOp': Attribute('StateAutOp', bool, init_value=False, sub_cb=self.set_state_aut_op),
-            'StateOpAct': Attribute('StateOpAct', bool, init_value=False),
+
+            'StateOpAct': Attribute('StateOpAct', bool, init_value=True),
             'StateAutAct': Attribute('StateAutAct', bool, init_value=False),
-            'StateOffAct': Attribute('StateOffAct', bool, init_value=True),
+            'StateOffAct': Attribute('StateOffAct', bool, init_value=False)
+        })
 
-            'SrcChannel': Attribute('SrcChannel', bool, init_value=False, sub_cb=self.set_src_channel),
-            'SrcManAut': Attribute('SrcManAut', bool, init_value=False, sub_cb=self.set_src_man_aut),
-            'SrcIntOp': Attribute('SrcIntOp', bool, init_value=False, sub_cb=self.set_src_int_op),
-            'SrcIntAut': Attribute('SrcIntAut', bool, init_value=False, sub_cb=self.set_src_int_aut),
-            'SrcManOp': Attribute('SrcManOp', bool, init_value=False, sub_cb=self.set_src_man_op),
-            'SrcIntAct': Attribute('SrcIntAct', bool, init_value=False),
-            'SrcManAct': Attribute('SrcManAct', bool, init_value=False)
-        }
+        self._name_of_parent = f"{name_of_parent}: " if name_of_parent != '' else ''
 
-    def _src_to_off(self):
-        self.attributes['SrcIntAct'].set_value(False)
-        self.attributes['SrcManAct'].set_value(False)
-        _logger.debug('Source mode is now off')
+    # --- Operation mode transitions ---
+    def _opmode_to_off(self):
+        self.attributes['StateOpAct'].set_value(False)
+        self.attributes['StateAutAct'].set_value(False)
+        self.attributes['StateOffAct'].set_value(True)
+        _logger.debug(f'{self._name_of_parent}Operation mode is now off')
 
-    def _src_to_int(self):
-        self.attributes['SrcIntAct'].set_value(True)
-        self.attributes['SrcManAct'].set_value(False)
-        _logger.debug('Source mode is now int')
+    def _opmode_to_aut(self):
+        self.attributes['StateOpAct'].set_value(False)
+        self.attributes['StateAutAct'].set_value(True)
+        self.attributes['StateOffAct'].set_value(False)
+        _logger.debug(f'{self._name_of_parent}Operation mode is now aut')
 
-    def _src_to_man(self):
-        self.attributes['SrcIntAct'].set_value(False)
-        self.attributes['SrcManAct'].set_value(True)
-        _logger.debug('Source mode is now man')
+    def _opmode_to_op(self):
+        self.attributes['StateOpAct'].set_value(True)
+        self.attributes['StateAutAct'].set_value(False)
+        self.attributes['StateOffAct'].set_value(False)
+        _logger.debug(f'{self._name_of_parent}Operation mode is now op')
 
-    def set_src_channel(self, value: bool):
-        _logger.debug('Source mode channel is now %s' % value)
+    # --- Callbacks for operation control ---
+    def set_state_channel(self, value: bool):
+        _logger.debug(f'{self._name_of_parent}Operation mode channel is now %s' % value)
+        if self.attributes['StateChannel'].value != value:
+            self.attributes['StateChannel'].set_value(value)
 
-    def set_src_man_aut(self, value: bool):
-        if not self.attributes['StateOffAct'].value and value:
-            if self.attributes['SrcChannel'].value:
-                self._src_to_man()
+    def set_state_off_aut(self, value: bool):
+        _logger.debug(f'{self._name_of_parent}StateOffAut set to {value}')
+        if self.attributes['StateChannel'].value and value:
+            if self.attributes['StateOpAct'].value or self.attributes['StateAutAct'].value:
+                self._opmode_to_off()
 
-    def set_src_man_op(self, value: bool):
-        if not self.attributes['StateOffAct'].value and value:
-            if not self.attributes['SrcChannel'].value:
-                self._src_to_man()
+    def set_state_op_aut(self, value: bool):
+        _logger.debug(f'{self._name_of_parent}StateOpAut set to {value}')
+        if self.attributes['StateChannel'].value and value:
+            if self.attributes['StateOffAct'].value or self.attributes['StateAutAct'].value:
+                self._opmode_to_op()
+
+    def set_state_aut_aut(self, value: bool):
+        _logger.debug(f'{self._name_of_parent}StateAutAut set to {value}')
+        if self.attributes['StateChannel'].value and value:
+            if self.attributes['StateOffAct'].value or self.attributes['StateOpAct'].value:
+                self._opmode_to_aut()
+
+    def set_state_off_op(self, value: bool):
+        _logger.debug(f'{self._name_of_parent}StateOffOp set to {value}')
+        if not self.attributes['StateChannel'].value and value:
+            if self.attributes['StateOpAct'].value or self.attributes['StateAutAct'].value:
+                self._opmode_to_off()
         if value:
-            self.attributes['SrcManOp'].set_value(False)
+            self.attributes['StateOffOp'].set_value(False)
+
+    def set_state_op_op(self, value: bool):
+        _logger.debug(f'{self._name_of_parent}StateOpOp set to {value}')
+        if not self.attributes['StateChannel'].value and value:
+            if self.attributes['StateOffAct'].value or self.attributes['StateAutAct'].value:
+                self._opmode_to_op()
+        if value:
+            self.attributes['StateOffOp'].set_value(False)
+
+    def set_state_aut_op(self, value: bool):
+        _logger.debug(f'{self._name_of_parent}StateAutOp set to {value}')
+        if not self.attributes['StateChannel'].value and value:
+            if self.attributes['StateOffAct'].value or self.attributes['StateOpAct'].value:
+                self._opmode_to_aut()
+        if value:
+            self.attributes['StateOffOp'].set_value(False)
 
 
-class OperationSourceModeOperationElements():
+class SourceMode():
     def __init__(self, name_of_parent: str = ''):
         """
-        Represents the operation and source mode control for operation elements
-        (Table 35 VDI/VDE/NAMUR 2658-3).
+        Represents the source mode control. Used by the operation elements.
+        (Table 16 VDI/VDE/NAMUR 2658-3).
         """
-        self.attributes = {
+        if not hasattr(self, 'attributes'):
+            self.attributes: dict['str', Attribute] = {}
+        self.attributes.update({
             # --- Source mode control ---
             'SrcChannel': Attribute('SrcChannel', bool, init_value=True, sub_cb=self.set_src_channel),
             'SrcManAut': Attribute('SrcManAut', bool, init_value=False, sub_cb=self.set_src_man_aut),
@@ -356,7 +393,7 @@ class OperationSourceModeOperationElements():
 
             'SrcIntAct': Attribute('SrcIntAct', bool, init_value=False),
             'SrcManAct': Attribute('SrcManAct', bool, init_value=False)
-        }
+        })
 
         self._name_of_parent = f"{name_of_parent}: " if name_of_parent != '' else ''
 
@@ -374,9 +411,8 @@ class OperationSourceModeOperationElements():
     # --- Callbacks for source control ---
     def set_src_channel(self, value: bool):
         _logger.debug('Source mode channel is now %s' % value)
-        if self.attributes['SrcChannel'].value == value:
-            return
-        self.attributes['SrcChannel'].set_value(value)
+        if self.attributes['SrcChannel'].value != value:
+            self.attributes['SrcChannel'].set_value(value)
 
     def set_src_man_aut(self, value: bool):
         if self.attributes['SrcChannel'].value and value:
@@ -397,3 +433,12 @@ class OperationSourceModeOperationElements():
             self._src_to_int()
         if value:
             self.attributes['SrcIntOp'].set_value(False)
+
+
+class OperationSourceModeElement(OperationMode, SourceMode):
+    def __init__(self, name_of_parent: str = ''):
+        """
+        Represents the operation and source mode control for operation elements.
+        """
+        OperationMode.__init__(self, name_of_parent)
+        SourceMode.__init__(self, name_of_parent)

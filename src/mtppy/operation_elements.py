@@ -1,7 +1,7 @@
 import logging
 
 from mtppy.attribute import Attribute
-from mtppy.operation_source_mode import OperationSourceModeOperationElements
+from mtppy.operation_source_mode import SourceMode
 from mtppy.suc_data_assembly import SUCOperationElement
 
 
@@ -80,7 +80,7 @@ class AnaManInt(AnaMan):
                          v_scl_min=v_scl_min, v_scl_max=v_scl_max,
                          v_unit=v_unit, init_value=init_value)
 
-        self.op_src_mode = OperationSourceModeOperationElements()
+        self.op_src_mode = SourceMode()
 
         # Extensions (Table 33)
         self._add_attribute(Attribute('WQC', int, init_value=0))
@@ -168,7 +168,7 @@ class DIntManInt(DIntMan):
                          v_scl_min=v_scl_min, v_scl_max=v_scl_max,
                          v_unit=v_unit, init_value=init_value)
 
-        self.op_src_mode = OperationSourceModeOperationElements()
+        self.op_src_mode = SourceMode()
 
         # Extensions (Table 35)
         self._add_attribute(Attribute('WQC', int, init_value=0))
@@ -241,7 +241,7 @@ class BinManInt(BinMan):
                          v_state0=v_state0, v_state1=v_state1,
                          init_value=init_value)
 
-        self.op_src_mode = OperationSourceModeOperationElements()
+        self.op_src_mode = SourceMode()
 
         # Extensions (Table 37)
         self._add_attribute(Attribute('WQC', int, init_value=0))

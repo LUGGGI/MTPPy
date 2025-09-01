@@ -3,7 +3,7 @@ import threading
 
 from mtppy.attribute import Attribute
 
-from mtppy.operation_source_mode import OperationSourceModeActiveElements
+from mtppy.operation_source_mode import OperationSourceModeElement, OperationMode
 from mtppy.suc_data_assembly import SUCActiveElement
 
 from time import sleep
@@ -22,7 +22,7 @@ class AnaVlv(SUCActiveElement):
         """
         super().__init__(tag_name, tag_description)
 
-        self.op_src_mode = OperationSourceModeActiveElements()
+        self.op_src_mode = OperationSourceModeElement()
 
         self.pos_min = pos_min
         self.pos_max = pos_max
@@ -565,7 +565,7 @@ class BinVlv(SUCActiveElement):
 
         super().__init__(tag_name, tag_description)
 
-        self.op_src_mode = OperationSourceModeActiveElements()
+        self.op_src_mode = OperationMode()
 
         self.open_fbk_calc = open_fbk_calc
         self.close_fbk_calc = close_fbk_calc
@@ -982,7 +982,7 @@ class BinDrv(SUCActiveElement):
                  rev_en=False, perm_en=False, intl_en=False, prot_en=False):
         super().__init__(tag_name, tag_description)
 
-        self.op_src_mode = OperationSourceModeActiveElements()
+        self.op_src_mode = OperationMode()
 
         self.rev_fbk_calc = rev_fbk_calc
         self.fwd_fbk_calc = fwd_fbk_calc
@@ -1386,7 +1386,7 @@ class AnaDrv(SUCActiveElement):
         """
         super().__init__(tag_name, tag_description)
 
-        self.op_src_mode = OperationSourceModeActiveElements()
+        self.op_src_mode = OperationSourceModeElement()
 
         self.rpm_min = rpm_min
         self.rpm_max = rpm_max
@@ -2013,7 +2013,7 @@ class PIDCtrl(SUCActiveElement):
                  P=100, Ti=10, Td=1):
         super().__init__(tag_name, tag_description)
 
-        self.op_src_mode = OperationSourceModeActiveElements()
+        self.op_src_mode = OperationSourceModeElement()
 
         self.pv_scl_min = pv_scl_min
         self.pv_scl_max = pv_scl_max
