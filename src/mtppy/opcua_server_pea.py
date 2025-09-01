@@ -2,7 +2,7 @@ import logging
 from opcua import Server, ua, Node
 from mtppy.communication_object import OPCUACommunicationObject
 from mtppy.service import Service
-from mtppy.suc_data_assembly import SUCDataAssembly, SUCActiveElement
+from mtppy.suc_data_assembly import SUCDataAssembly, SUCActiveElement, SUCIndicatorElement, SUCOperationElement
 from mtppy.mtp_generator import MTPGenerator
 
 _logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
@@ -17,20 +17,23 @@ class OPCUAServerPEA:
             mtp_generator (MTPGenerator): Instance of an MTP generator.
             endpoint (str): Endpoint of the OPC UA server.
         """
-        self.service_set = {}
-        self.active_elements = {}
+        self.service_set: dict[str, Service] = {}
+        self.active_elements: dict[str, SUCActiveElement] = {}
+        self.indicator_elements: dict[str, SUCIndicatorElement] = {}
+        self.operation_elements: dict[str, SUCOperationElement] = {}
         self.custom_data_assembly_sets: dict[str, dict[str, SUCDataAssembly]] = {}
-        self.endpoint = endpoint
-        self.opcua_server = None
-        self.opcua_ns = 3
+        self.endpoint: str = endpoint
+        self.opcua_server: Server = None
+        self.opcua_ns: int = 3
         self.subscription_list = SubscriptionList()
         self._init_opcua_server()
-        self.mtp = mtp_generator
+        self.mtp: MTPGenerator = mtp_generator
 
         self._folders = ['configuration_parameters', 'procedures', 'procedure_parameters',
                          'process_value_ins', 'report_values', 'process_value_outs']
         """Folders that are created in the OPC UA server if found in a data assembly
         even if they are not of type SUCDataAssembly."""
+
         self._leaves = ['op_src_mode', 'state_machine', 'procedure_control']
         """Folders that are created in the OPC UA server if found in a data assembly
         even if they are not of type SUCDataAssembly.
@@ -54,6 +57,24 @@ class OPCUAServerPEA:
             active_element (SUCActiveElement): Active element (e.g., AnaVlv, BinVlv, etc.).
         """
         self.active_elements[active_element.tag_name] = active_element
+
+    def add_indicator_element(self, indicator_element: SUCIndicatorElement):
+        """
+        Add an indicator element to the PEA.
+
+        Args:
+            indicator_element (SUCIndicatorElement): Indicator element.
+        """
+        self.indicator_elements[indicator_element.tag_name] = indicator_element
+
+    def add_operation_element(self, operation_element: SUCOperationElement):
+        """
+        Add an operation element to the PEA.
+
+        Args:
+            operation_element (SUCOperationElement): Operation element.
+        """
+        self.operation_elements[operation_element.tag_name] = operation_element
 
     def add_custom_data_assembly_set(self, root_folder_name: str, data_assembly_set: dict[str, SUCDataAssembly]):
         """
@@ -148,11 +169,6 @@ class OPCUAServerPEA:
         Creates an OPC UA server instance including required nodes according to defined data assemblies.
         """
         _logger.info(f'Adding OPC UA nodes to the server structure according to the PEA structure:')
-        ns = self.opcua_ns
-        server = self.opcua_server.get_objects_node()
-
-        services_node_id = f'ns={ns};s=services'
-        services_node = server.add_folder(services_node_id, "services")
 
         # initiate a new MTP that will be added to InstanceHierarchy: ModuleTypePackage
         if self.mtp:
@@ -162,32 +178,28 @@ class OPCUAServerPEA:
         if self.mtp:
             self.mtp.add_opcua_server(self.endpoint)
 
-        for service in self.service_set.values():
-            _logger.info(f'- service {service.tag_name}')
-            self._create_opcua_objects_for_folders(service, services_node_id, services_node)
+        # add service elements
+        self._create_opcua_element(self.service_set, "services")
 
+        # add active, indicator and operation elements
         if self.active_elements.__len__() > 0:
-            act_elem_node_id = f'ns={ns};s=active_elements'
-            act_elem_node = server.add_folder(act_elem_node_id, "active_elements")
-            for active_element in self.active_elements.values():
-                _logger.info(f'- active element {active_element.tag_name}')
-                self._create_opcua_objects_for_folders(
-                    active_element, act_elem_node_id, act_elem_node)
+            self._create_opcua_element(self.active_elements, "active_elements")
+        if self.indicator_elements.__len__() > 0:
+            self._create_opcua_element(self.indicator_elements, "indicator_elements")
+        if self.operation_elements.__len__() > 0:
+            self._create_opcua_element(self.operation_elements, "operation_elements")
 
         # add custom data assemblies
         for root_folder_name, data_assembly_set in self.custom_data_assembly_sets.items():
             _logger.info(f'- custom data assembly {root_folder_name}')
             # if root_folder_name is the same as the first key add to root
             if root_folder_name == next(iter(data_assembly_set)):
+                ns = self.opcua_ns
+                server = self.opcua_server.get_objects_node()
                 self._create_opcua_objects_for_folders(
                     data_assembly_set[root_folder_name], f"ns={ns};s={root_folder_name}", server, root_folder_name)
             else:
-                custom_da_node_id = f'ns={ns};s={root_folder_name}'
-                custom_da_node = server.add_folder(custom_da_node_id, root_folder_name)
-                for data_assembly in data_assembly_set.values():
-                    _logger.info(f'-- data assembly {data_assembly.tag_name}')
-                    self._create_opcua_objects_for_folders(
-                        data_assembly, custom_da_node_id, custom_da_node)
+                self._create_opcua_element(data_assembly_set, root_folder_name)
 
                 # add SupportedRoleClass to all InternalElements
         if self.mtp:
@@ -197,6 +209,23 @@ class OPCUAServerPEA:
         if self.mtp:
             _logger.info(f'MTP manifest export to {self.mtp.export_path}')
             self.mtp.export_manifest()
+
+    def _create_opcua_element(self, elements: dict[str, SUCDataAssembly], folder_name: str):
+        """
+        Create OPC UA nodes for a specific element type (active elements, indicator elements, operation elements).
+
+        Args:
+            elements (dict[str, SUCDataAssembly]): Dictionary of elements.
+            folder_name (str): Name of the folder to create in the OPC UA server.
+        """
+        ns = self.opcua_ns
+        server = self.opcua_server.get_objects_node()
+        element_node_id = f'ns={ns};s={folder_name}'
+        element_node = server.add_folder(element_node_id, folder_name)
+        _logger.info(f'- {folder_name}')
+        for element in elements.values():
+            _logger.info(f'-- element {element.tag_name}')
+            self._create_opcua_objects_for_folders(element, element_node_id, element_node)
 
     def _create_opcua_objects_for_folders(self, data_assembly: SUCDataAssembly,
                                           parent_opcua_prefix: str, parent_opcua_object: Node,
@@ -250,7 +279,7 @@ class OPCUAServerPEA:
         if self.mtp:
             self.mtp.add_linked_attr(instance, link_id)
 
-    def _create_opcua_objects_for_leaves(self, opcua_object, parent_opcua_prefix: str, parent_opcua_object, par_instance):
+    def _create_opcua_objects_for_leaves(self, opcua_object: SUCDataAssembly, parent_opcua_prefix: str, parent_opcua_object: Node, par_instance):
         """
         Iterates over end objects (leaves) of data assemblies to create corresponding OPC UA nodes.
 
@@ -265,8 +294,8 @@ class OPCUAServerPEA:
 
             # We attach communication objects to be able to write values on opcua server on attributes change
             opcua_type = self._infer_data_type(attr.type)
-            opcua_node_obj = parent_opcua_object.add_variable(attribute_node_id, attr.name, attr.init_value,
-                                                              varianttype=opcua_type)
+            opcua_node_obj: Node = parent_opcua_object.add_variable(attribute_node_id, attr.name, attr.init_value,
+                                                                    varianttype=opcua_type)
             _logger.debug(
                 f'OPCUA Node: {attribute_node_id}, Name: {attr.name}, Value: {attr.init_value}')
             opcua_node_obj.set_writable(False)
