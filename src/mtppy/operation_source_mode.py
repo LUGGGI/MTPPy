@@ -348,9 +348,9 @@ class OperationSourceModeOperationElements():
         """
         self.attributes = {
             # --- Source mode control ---
-            'SrcChannel': Attribute('SrcChannel', bool, init_value=False, sub_cb=self.set_src_channel),
+            'SrcChannel': Attribute('SrcChannel', bool, init_value=True, sub_cb=self.set_src_channel),
             'SrcManAut': Attribute('SrcManAut', bool, init_value=False, sub_cb=self.set_src_man_aut),
-            'SrcIntAut': Attribute('SrcIntAut', bool, init_value=False, sub_cb=self.set_src_int_aut),
+            'SrcIntAut': Attribute('SrcIntAut', bool, init_value=True, sub_cb=self.set_src_int_aut),
             'SrcIntOp': Attribute('SrcIntOp', bool, init_value=False, sub_cb=self.set_src_int_op),
             'SrcManOp': Attribute('SrcManOp', bool, init_value=False, sub_cb=self.set_src_man_op),
 
@@ -379,25 +379,21 @@ class OperationSourceModeOperationElements():
         self.attributes['SrcChannel'].set_value(value)
 
     def set_src_man_aut(self, value: bool):
-        if not self.attributes['StateOffAct'].value and value:
-            if self.attributes['SrcChannel'].value:
-                self._src_to_man()
-
-    def set_src_int_aut(self, value: bool):
-        if not self.attributes['StateOffAct'].value and value:
-            if self.attributes['SrcChannel'].value:
-                self._src_to_int()
-
-    def set_src_int_op(self, value: bool):
-        if not self.attributes['StateOffAct'].value and value:
-            if not self.attributes['SrcChannel'].value:
-                self._src_to_int()
-        if value:
-            self.attributes['SrcIntOp'].set_value(False)
+        if self.attributes['SrcChannel'].value and value:
+            self._src_to_man()
 
     def set_src_man_op(self, value: bool):
-        if not self.attributes['StateOffAct'].value and value:
-            if not self.attributes['SrcChannel'].value:
-                self._src_to_man()
+        if not self.attributes['SrcChannel'].value and value:
+            self._src_to_man()
         if value:
             self.attributes['SrcManOp'].set_value(False)
+
+    def set_src_int_aut(self, value: bool):
+        if self.attributes['SrcChannel'].value and value:
+            self._src_to_int()
+
+    def set_src_int_op(self, value: bool):
+        if not self.attributes['SrcChannel'].value and value:
+            self._src_to_int()
+        if value:
+            self.attributes['SrcIntOp'].set_value(False)
