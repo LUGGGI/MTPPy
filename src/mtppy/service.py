@@ -125,6 +125,15 @@ class Service(SUCServiceControl):
         """
         self.state_machine.command_en_ctrl.enable_restart(enable)
 
+    def get_current_procedure(self) -> Procedure:
+        """
+        Returns the current procedure.
+
+        Returns:
+            Procedure: The current procedure.
+        """
+        return self.procedures[self.procedure_control.get_procedure_cur()]
+
     def init_idle_state(self):
         """
         Initializes the idle state.
@@ -180,7 +189,20 @@ class Service(SUCServiceControl):
         """
         Changes the state. Has to be called by each transitional state method.
         """
+        # don't automatically change state for non self-completing procedures
+        if self.state_machine.get_current_state_str() == "execute":
+            if not self.is_self_completing():
+                return
         self.state_machine.state_change()
+
+    def is_self_completing(self) -> bool:
+        """
+        Checks if the current Procedure is self-completing.
+
+        Returns:
+            bool: True if the current Procedure is self-completing, False otherwise.
+        """
+        return self.get_current_procedure().attributes['IsSelfCompleting'].value
 
     def add_configuration_parameter(self, configuration_parameter: SUCParameterElement):
         """
