@@ -1,4 +1,5 @@
 import logging
+import threading
 
 from mtppy.attribute import Attribute
 
@@ -307,23 +308,42 @@ class OperationMode():
 
         self._name_of_parent = f"{name_of_parent}: " if name_of_parent != '' else ''
 
+        self.state_op_act = threading.Lock()
+        self.state_aut_act = threading.Lock()
+        self.state_off_act = threading.Lock()
+
     # --- Operation mode transitions ---
     def _opmode_to_off(self):
+        if not self.state_op_act.acquire(blocking=False) or not self.state_aut_act.acquire(blocking=False):
+            _logger.warning(
+                f'{self._name_of_parent}Cannot switch to operation mode off, because other command is active')
+            return
         self.attributes['StateOpAct'].set_value(False)
         self.attributes['StateAutAct'].set_value(False)
         self.attributes['StateOffAct'].set_value(True)
+        self.state_off_act.release()
         _logger.debug(f'{self._name_of_parent}Operation mode is now off')
 
     def _opmode_to_aut(self):
+        if not self.state_op_act.acquire(blocking=False) or not self.state_off_act.acquire(blocking=False):
+            _logger.warning(
+                f'{self._name_of_parent}Cannot switch to operation mode aut, because other command is active')
+            return
         self.attributes['StateOpAct'].set_value(False)
         self.attributes['StateAutAct'].set_value(True)
         self.attributes['StateOffAct'].set_value(False)
+        self.state_aut_act.release()
         _logger.debug(f'{self._name_of_parent}Operation mode is now aut')
 
     def _opmode_to_op(self):
+        if not self.state_aut_act.acquire(blocking=False) or not self.state_off_act.acquire(blocking=False):
+            _logger.warning(
+                f'{self._name_of_parent}Cannot switch to operation mode op, because other command is active')
+            return
         self.attributes['StateOpAct'].set_value(True)
         self.attributes['StateAutAct'].set_value(False)
         self.attributes['StateOffAct'].set_value(False)
+        self.state_op_act.release()
         _logger.debug(f'{self._name_of_parent}Operation mode is now op')
 
     # --- Callbacks for operation control ---
@@ -397,20 +417,31 @@ class SourceMode():
 
         self._name_of_parent = f"{name_of_parent}: " if name_of_parent != '' else ''
 
+        self.src_int_act = threading.Lock()
+        self.src_man_act = threading.Lock()
+
     # --- Source mode transitions ---
     def _src_to_int(self):
-        self.attributes['SrcIntAct'].set_value(True)
+        if not self.src_man_act.acquire(blocking=False):
+            _logger.warning(
+                f'{self._name_of_parent}Cannot switch to source mode int, because other command is active')
         self.attributes['SrcManAct'].set_value(False)
-        _logger.debug('Source mode is now int')
+        self.attributes['SrcIntAct'].set_value(True)
+        self.src_int_act.release()
+        _logger.debug(f'{self._name_of_parent}Source mode is now int')
 
     def _src_to_man(self):
+        if not self.src_int_act.acquire(blocking=False):
+            _logger.warning(
+                f'{self._name_of_parent}Cannot switch to source mode man, because other command is active')
         self.attributes['SrcIntAct'].set_value(False)
         self.attributes['SrcManAct'].set_value(True)
-        _logger.debug('Source mode is now man')
+        self.src_man_act.release()
+        _logger.debug(f'{self._name_of_parent}Source mode is now man')
 
     # --- Callbacks for source control ---
     def set_src_channel(self, value: bool):
-        _logger.debug('Source mode channel is now %s' % value)
+        _logger.debug(f'{self._name_of_parent}Source mode channel is now %s' % value)
         if self.attributes['SrcChannel'].value != value:
             self.attributes['SrcChannel'].set_value(value)
 
