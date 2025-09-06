@@ -294,14 +294,14 @@ class OperationMode():
             # --- Operation mode control ---
             'StateChannel': Attribute('StateChannel', bool, init_value=True, sub_cb=self.set_state_channel),
             'StateOffAut': Attribute('StateOffAut', bool, init_value=False, sub_cb=self.set_state_off_aut),
-            'StateOpAut': Attribute('StateOpAut', bool, init_value=True, sub_cb=self.set_state_op_aut),
+            'StateOpAut': Attribute('StateOpAut', bool, init_value=False, sub_cb=self.set_state_op_aut),
             'StateAutAut': Attribute('StateAutAut', bool, init_value=False, sub_cb=self.set_state_aut_aut),
             'StateOffOp': Attribute('StateOffOp', bool, init_value=False, sub_cb=self.set_state_off_op),
             'StateOpOp': Attribute('StateOpOp', bool, init_value=False, sub_cb=self.set_state_op_op),
             'StateAutOp': Attribute('StateAutOp', bool, init_value=False, sub_cb=self.set_state_aut_op),
 
-            'StateOpAct': Attribute('StateOpAct', bool, init_value=True),
-            'StateAutAct': Attribute('StateAutAct', bool, init_value=False),
+            'StateOpAct': Attribute('StateOpAct', bool, init_value=False),
+            'StateAutAct': Attribute('StateAutAct', bool, init_value=True),
             'StateOffAct': Attribute('StateOffAct', bool, init_value=False)
         })
 
@@ -364,7 +364,7 @@ class OperationMode():
             if self.attributes['StateOffAct'].value or self.attributes['StateAutAct'].value:
                 self._opmode_to_op()
         if value:
-            self.attributes['StateOffOp'].set_value(False)
+            self.attributes['StateOpOp'].set_value(False)
 
     def set_state_aut_op(self, value: bool):
         _logger.debug(f'{self._name_of_parent}StateAutOp set to {value}')
@@ -372,7 +372,17 @@ class OperationMode():
             if self.attributes['StateOffAct'].value or self.attributes['StateOpAct'].value:
                 self._opmode_to_aut()
         if value:
-            self.attributes['StateOffOp'].set_value(False)
+            self.attributes['StateAutOp'].set_value(False)
+
+    # --- Accessors for operation mode state ---
+    def is_opmode_off(self) -> bool:
+        return self.attributes['StateOffAct'].value
+
+    def is_opmode_aut(self) -> bool:
+        return self.attributes['StateAutAct'].value
+
+    def is_opmode_op(self) -> bool:
+        return self.attributes['StateOpAct'].value
 
 
 class SourceMode():
@@ -387,11 +397,11 @@ class SourceMode():
             # --- Source mode control ---
             'SrcChannel': Attribute('SrcChannel', bool, init_value=True, sub_cb=self.set_src_channel),
             'SrcManAut': Attribute('SrcManAut', bool, init_value=False, sub_cb=self.set_src_man_aut),
-            'SrcIntAut': Attribute('SrcIntAut', bool, init_value=True, sub_cb=self.set_src_int_aut),
+            'SrcIntAut': Attribute('SrcIntAut', bool, init_value=False, sub_cb=self.set_src_int_aut),
             'SrcIntOp': Attribute('SrcIntOp', bool, init_value=False, sub_cb=self.set_src_int_op),
             'SrcManOp': Attribute('SrcManOp', bool, init_value=False, sub_cb=self.set_src_man_op),
 
-            'SrcIntAct': Attribute('SrcIntAct', bool, init_value=False),
+            'SrcIntAct': Attribute('SrcIntAct', bool, init_value=True),
             'SrcManAct': Attribute('SrcManAct', bool, init_value=False)
         })
 
@@ -433,6 +443,13 @@ class SourceMode():
             self._src_to_int()
         if value:
             self.attributes['SrcIntOp'].set_value(False)
+
+    # --- Accessors for source mode state ---
+    def is_srcmode_int(self) -> bool:
+        return self.attributes['SrcIntAct'].value
+
+    def is_srcmode_man(self) -> bool:
+        return self.attributes['SrcManAct'].value
 
 
 class OperationSourceModeElement(OperationMode, SourceMode):
