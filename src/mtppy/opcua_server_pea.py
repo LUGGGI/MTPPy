@@ -34,7 +34,7 @@ class OPCUAServerPEA:
         """Folders that are created in the OPC UA server if found in a data assembly
         even if they are not of type SUCDataAssembly."""
 
-        self._leaves = ['op_src_mode', 'state_machine', 'procedure_control']
+        self._leaves = ['op_src_mode', 'state_machine', 'procedure_control', 'locks']
         """Folders that are created in the OPC UA server if found in a data assembly
         even if they are not of type SUCDataAssembly.
 
@@ -179,7 +179,8 @@ class OPCUAServerPEA:
             self.mtp.add_opcua_server(self.endpoint)
 
         # add service elements
-        self._create_opcua_element(self.service_set, "services")
+        if self.service_set.__len__() > 0:
+            self._create_opcua_element(self.service_set, "services")
 
         # add active, indicator and operation elements
         if self.active_elements.__len__() > 0:

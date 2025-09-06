@@ -1,5 +1,7 @@
 import logging
 import threading
+from abc import abstractmethod
+from collections.abc import Callable
 
 from mtppy.attribute import Attribute
 
@@ -10,6 +12,117 @@ from time import sleep
 from simple_pid import PID
 
 _logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+
+
+class Locks():
+    """Class that implements the locks for the active elements. Implements the locks for permission, interlock and protect."""
+
+    def __init__(self, perm_en=False, intl_en=False, prot_en=False, expext_save_pos_func: Callable[[], None] = None):
+
+        self.perm_en = perm_en
+        self.intl_en = intl_en
+        self.prot_en = prot_en
+
+        self._expect_save_pos = expext_save_pos_func
+
+        self.permit = threading.Lock()
+        self.interlock = threading.Lock()
+        self.protect = threading.Lock()
+
+        self.attributes = {
+            'PermEn': Attribute('PermEn', bool, init_value=perm_en),
+            'Permit': Attribute('Permit', bool, init_value=1, sub_cb=self.__set_permit),
+            'IntlEn': Attribute('IntlEn', bool, init_value=intl_en),
+            'Interlock': Attribute('Interlock', bool, init_value=1, sub_cb=self.__set_interlock),
+            'ProtEn': Attribute('ProtEn', bool, init_value=prot_en),
+            'Protect': Attribute('Protect', bool, init_value=1, sub_cb=self.__set_protect),
+        }
+
+    def _run_allowed(self):
+        if self.attributes['PermEn'].value and self.attributes['Permit'].value == 0:
+            _logger.debug('Permission is not given')
+            return False
+        if self.attributes['IntlEn'].value and self.attributes['Interlock'].value == 0:
+            _logger.debug('Interlock is active')
+            return False
+        if self.attributes['ProtEn'].value and self.attributes['Protect'].value == 0:
+            _logger.debug('Protect is active')
+            return False
+        return True
+
+    def __set_permit(self, value: bool):
+        """Callback function for Permit attribute."""
+        _logger.debug(f'Permit set to {value}')
+        if self.attributes['Permit'].value == value:
+            return
+        self.set_permit(value)
+
+    def set_permit(self, value: bool):
+        """Set Permit attribute with safety checks."""
+        # don't set Permit to False if PermEn is False
+        if not self.attributes['PermEn'].value:
+            self.attributes['Permit'].set_value(True)
+            return
+        # only set value if it is different from the current one
+        if self.attributes['Permit'].value != value:
+            if not value:
+                self.permit.acquire(blocking=False)
+            else:
+                self.permit.release()
+            self.attributes['Permit'].set_value(value)
+            return
+
+    def permit_status(self) -> bool:
+        return self.attributes['Permit'].value
+
+    def __set_interlock(self, value: bool):
+        """Callback function for Interlock attribute."""
+        _logger.debug(f'Interlock set to {value}')
+        if self.attributes['Interlock'].value == value:
+            return
+        self.set_interlock(value)
+
+    def set_interlock(self, value: bool):
+        """Set Interlock attribute with safety checks."""
+        # don't set Interlock to False if IntlEn is False
+        if not self.attributes['IntlEn'].value:
+            self.attributes['Interlock'].set_value(True)
+            return
+        if self.attributes['Interlock'].value != value:
+            if not value:
+                self.interlock.acquire(blocking=False)
+            else:
+                self.interlock.release()
+            self.attributes['Interlock'].set_value(value)
+            self._expect_save_pos()
+
+    def interlock_status(self) -> bool:
+        return self.attributes['Interlock'].value
+
+    def __set_protect(self, value: bool):
+        """Callback function for Protect attribute."""
+        _logger.debug('Protect set to %s' % value)
+        if self.attributes['Protect'].value == value:
+            return
+        self.set_protect(value)
+
+    def set_protect(self, value: bool, reset=False):
+        """Set Protect attribute with safety checks.  
+        Reset should be True if called from reset_vlv function."""
+        if not self.attributes['ProtEn'].value:
+            self.attributes['Protect'].set_value(True)
+            return
+
+        if reset:
+            self.protect.release()
+            self.attributes['Protect'].set_value(True)
+        else:
+            self.protect.acquire(blocking=False)
+            self.attributes['Protect'].set_value(False)
+        self._expect_save_pos()
+
+    def protect_status(self) -> bool:
+        return self.attributes['Protect'].value
 
 
 class AnaVlv(SUCActiveElement):
@@ -24,6 +137,8 @@ class AnaVlv(SUCActiveElement):
 
         self.op_src_mode = OperationSourceModeElement()
 
+        self.locks = Locks(perm_en, intl_en, prot_en, self._expect_save_pos)
+
         self.pos_min = pos_min
         self.pos_max = pos_max
         self.pos_scl_min = pos_scl_min
@@ -35,9 +150,6 @@ class AnaVlv(SUCActiveElement):
 
         self.safe_pos = safe_pos
         self.safe_pos_en = safe_pos_en
-        self.perm_en = perm_en
-        self.intl_en = intl_en
-        self.prot_en = prot_en
 
         self._add_attribute(Attribute('SafePos', bool, init_value=safe_pos))
         self._add_attribute(Attribute('SafePosEn', bool, init_value=self.safe_pos_en))
@@ -64,13 +176,7 @@ class AnaVlv(SUCActiveElement):
         self._add_attribute(Attribute('CloseFbk', bool, init_value=False))
         self._add_attribute(Attribute('PosFbkCalc', bool, init_value=pos_fbk_calc))
         self._add_attribute(Attribute('PosFbk', float, init_value=pos_min))
-        self._add_attribute(Attribute('PermEn', bool, init_value=perm_en))
-        self._add_attribute(Attribute('Permit', bool, init_value=0))
-        self._add_attribute(Attribute('IntlEn', bool, init_value=intl_en))
-        self._add_attribute(Attribute('Interlock', bool, init_value=0))
-        self._add_attribute(Attribute('ProtEn', bool, init_value=prot_en))
-        self._add_attribute(Attribute('Protect', bool, init_value=0))
-        self._add_attribute(Attribute('ResetOp', bool, init_value=0, sub_cb=self.set_reset_op))
+        self._add_attribute(Attribute('ResetOp', bool, init_value=0, sub_cb=self._set_reset_op))
         self._add_attribute(Attribute('ResetAut', bool, init_value=0, sub_cb=self.set_reset_aut))
 
     def _expect_save_pos(self):
@@ -79,9 +185,9 @@ class AnaVlv(SUCActiveElement):
         else:
             if self.attributes['SafePosEn'].value:
                 self._go_save_pos()
+                self.attributes['SafePosAct'].set_value(True)
             else:  # hold position
                 _logger.debug('Device has no safe position')
-            self.attributes['SafePosAct'].set_value(True)
 
     def _go_save_pos(self):
         if self.attributes['SafePos'].value == 1:
@@ -129,23 +235,14 @@ class AnaVlv(SUCActiveElement):
                 self._run_close_vlv()
                 self.attributes['CloseOp'].set_value(False)
 
-    def set_reset_op(self, value: bool):
+    def _set_reset_op(self, value: bool):
         _logger.debug(f'ResetOp set to {value}')
         if self.op_src_mode.attributes['StateOpAct'].value and value:
             self._reset_vlv()
             self.attributes['ResetOp'].set_value(False)
 
     def _run_allowed(self):
-        if self.attributes['PermEn'].value and self.attributes['Permit'].value == 0:
-            _logger.debug(f'Permission is not given')
-            return False
-        if self.attributes['IntlEn'].value and self.attributes['Interlock'].value == 0:
-            _logger.debug(f'Interlock is active')
-            return False
-        if self.attributes['ProtEn'].value and self.attributes['Protect'].value == 0:
-            _logger.debug(f'Protect is active')
-            return False
-        return True
+        return self.locks._run_allowed()
 
     def _run_open_vlv(self):
         self.attributes['OpenAct'].set_value(True)
@@ -164,8 +261,8 @@ class AnaVlv(SUCActiveElement):
             self.attributes['CloseFbk'].set_value(True)
 
     def _reset_vlv(self):
-        if self.attributes['ProtEn'].value and self.attributes['Protect'].value == 0:
-            self.attributes['Protect'].set_value(True)
+        if self.locks.attributes['ProtEn'].value and self.locks.attributes['Protect'].value == 0:
+            self.locks.set_protect(True, reset=True)
             self.attributes['SafePosAct'].set_value(False)
         self.attributes['OpenAct'].set_value(False)
         if self.attributes['OpenFbkCalc']:
@@ -212,7 +309,7 @@ class AnaVlv(SUCActiveElement):
 
             # if SafePosAct is active, safety setting for the position is accepted
             elif self.attributes['SafePosAct'].value or \
-                    (self.attributes['PermEn'].value and self.attributes['Permit'].value == 0):
+                    (self.locks.attributes['PermEn'].value and self.locks.attributes['Permit'].value == 0):
                 _logger.debug('manual or internal position specification inactive')
                 return
 
@@ -243,30 +340,6 @@ class AnaVlv(SUCActiveElement):
         if not self.attributes['CloseFbkCalc'].value:
             self.attributes['CloseFbk'].set_value(value)
             _logger.debug(f'CloseFbk set to {value}')
-
-    def set_permit(self, value: bool):
-        if not self.attributes['PermEn'].value:
-            value = True
-        self.attributes['Permit'].set_value(value)
-        _logger.debug('Permit set to %s' % value)
-        # safety position should not be activated for permit mode
-        self.attributes['SafePosAct'].set_value(False)
-
-    def set_interlock(self, value: bool):
-        if not self.attributes['IntlEn'].value:
-            value = True
-        self.attributes['Interlock'].set_value(value)
-        _logger.debug('Interlock set to %s' % value)
-        self._expect_save_pos()
-
-    def set_protect(self, value: bool):
-        if not self.attributes['ProtEn'].value:
-            value = True
-        if value:
-            self._reset_vlv()
-        self.attributes['Protect'].set_value(value)
-        _logger.debug('Protect set to %s' % value)
-        self._expect_save_pos()
 
     def get_pos(self):
         return self.attributes['Pos'].value
@@ -506,7 +579,7 @@ class MonAnaVlv(AnaVlv):
                 self._run_close_vlv()
                 self.attributes['CloseOp'].set_value(False)
 
-    def set_reset_op(self, value: bool):
+    def _set_reset_op(self, value: bool):
         _logger.debug('ResetOp set to %s' % value)
         if self.op_src_mode.attributes['StateOpAct'].value and value:
             if self.attributes['MonEn'].value:
@@ -555,27 +628,38 @@ class MonAnaVlv(AnaVlv):
 
 
 class BinVlv(SUCActiveElement):
+    """Binary Valve (BinVlv). Table 40 from VDI/VDE/NAMUR 2658-3."""
+
     def __init__(self, tag_name: str, tag_description: str = '', open_fbk_calc: bool = True,
                  close_fbk_calc: bool = True,
                  safe_pos: int = 0, safe_pos_en: bool = False, perm_en: bool = False, intl_en: bool = False,
                  prot_en: bool = False):
         """
-        Binary Valve (BinVlv). Parameter names correspond attribute names in VDI/VDE/NAMUR 2658.
+        Binary Valve (BinVlv). Initializes the attributes according to VDI/VDE/NAMUR 2658-3 Table 40.
+
+        Args:
+            tag_name (str): Name of the Element.
+            tag_description (str): Description of the Element.
+            open_fbk_calc (bool): Open Feedback Source. 1: calculated, 0: sensor detection.
+            close_fbk_calc (bool): Close Feedback Source. 1: calculated, 0: sensor detection.
+            safe_pos (int): Safe Position. 1: open, 0: close.
+            safe_pos_en (bool): Hardware Safe Position enabled. 1: Device has a safe position, 0: Device has no safe position.
+            perm_en (bool): Enables the Permission Lock. 1: enabled, 0: disabled.
+            intl_en (bool): Enables the Interlock Lock. 1: enabled, 0: disabled.
+            prot_en (bool): Enables the Protection Lock. 1: enabled, 0: disabled.
         """
 
         super().__init__(tag_name, tag_description)
 
         self.op_src_mode = OperationMode()
 
+        self.locks = Locks(perm_en, intl_en, prot_en, self._expect_save_pos)
+
         self.open_fbk_calc = open_fbk_calc
         self.close_fbk_calc = close_fbk_calc
 
         self.safe_pos = safe_pos
         self.safe_pos_en = safe_pos_en
-        self.perm_en = perm_en
-        self.intl_en = intl_en
-        self.prot_en = prot_en
-        self.__reset_protect = False
 
         self._add_attribute(Attribute('SafePos', bool, init_value=safe_pos))
         self._add_attribute(Attribute('SafePosEn', bool, init_value=self.safe_pos_en))
@@ -590,14 +674,7 @@ class BinVlv(SUCActiveElement):
         self._add_attribute(Attribute('OpenFbk', bool, init_value=False))
         self._add_attribute(Attribute('CloseFbkCalc', bool, init_value=close_fbk_calc))
         self._add_attribute(Attribute('CloseFbk', bool, init_value=False))
-        self._add_attribute(Attribute('PermEn', bool, init_value=perm_en))
-        self._add_attribute(Attribute('Permit', bool, init_value=1, sub_cb=self.__set_permit))
-        self._add_attribute(Attribute('IntlEn', bool, init_value=intl_en))
-        self._add_attribute(Attribute('Interlock', bool, init_value=1,
-                            sub_cb=self.__set_interlock))
-        self._add_attribute(Attribute('ProtEn', bool, init_value=prot_en))
-        self._add_attribute(Attribute('Protect', bool, init_value=1, sub_cb=self.__set_protect))
-        self._add_attribute(Attribute('ResetOp', bool, init_value=0, sub_cb=self.set_reset_op))
+        self._add_attribute(Attribute('ResetOp', bool, init_value=0, sub_cb=self._set_reset_op))
         self._add_attribute(Attribute('ResetAut', bool, init_value=0, sub_cb=self.set_reset_aut))
 
     def _expect_save_pos(self):
@@ -606,9 +683,9 @@ class BinVlv(SUCActiveElement):
         else:
             if self.attributes['SafePosEn'].value:
                 self._go_safe_pos()
+                self.attributes['SafePosAct'].set_value(True)
             else:
                 _logger.debug('Device has no safe position')
-            self.attributes['SafePosAct'].set_value(True)
 
     def _go_safe_pos(self):
         if self.attributes['SafePos'].value:
@@ -651,7 +728,7 @@ class BinVlv(SUCActiveElement):
                 self._run_close_vlv()
         self.attributes['CloseOp'].set_value(False)
 
-    def set_reset_op(self, value: bool):
+    def _set_reset_op(self, value: bool):
         _logger.debug('ResetOp set to %s' % value)
         if self.attributes['ResetOp'].value == value:
             return
@@ -671,16 +748,7 @@ class BinVlv(SUCActiveElement):
         # Closing the valve is always allowed
         if for_close:
             return True
-        if self.attributes['PermEn'].value and self.attributes['Permit'].value == 0:
-            _logger.debug('Permission is not given')
-            return False
-        if self.attributes['IntlEn'].value and self.attributes['Interlock'].value == 0:
-            _logger.debug('Interlock is active')
-            return False
-        if self.attributes['ProtEn'].value and self.attributes['Protect'].value == 0:
-            _logger.debug('Protect is active')
-            return False
-        return True
+        return self.locks._run_allowed()
 
     def _run_open_vlv(self):
         self.attributes['Ctrl'].set_value(True)
@@ -699,9 +767,8 @@ class BinVlv(SUCActiveElement):
             self.attributes['CloseFbk'].set_value(True)
 
     def reset_vlv(self):
-        if self.attributes['ProtEn'].value and self.attributes['Protect'].value == 0:
-            self.__reset_protect = True
-            self.attributes['Protect'].set_value(True)
+        if self.locks.attributes['ProtEn'].value and self.locks.attributes['Protect'].value == 0:
+            self.locks.set_protect(True, reset=True)
 
         if self.attributes['SafePosEn'].value:
             self.attributes['SafePosAct'].set_value(False)
@@ -722,62 +789,6 @@ class BinVlv(SUCActiveElement):
         if not self.attributes['CloseFbkCalc'].value:
             self.attributes['CloseFbk'].set_value(value)
             _logger.debug('CloseFbk set to %s' % value)
-
-    def __set_permit(self, value: bool):
-        """Callback function for Permit attribute."""
-        _logger.debug(f'Permit set to {value}')
-        if self.attributes['Permit'].value == value:
-            return
-        self.set_permit(value)
-
-    def set_permit(self, value: bool):
-        """Set Permit attribute with safety checks."""
-        # don't set Permit to False if PermEn is False
-        if not self.attributes['PermEn'].value:
-            self.attributes['Permit'].set_value(True)
-            return
-        # only set value if it is different from the current one
-        if self.attributes['Permit'].value != value:
-            self.attributes['Permit'].set_value(value)
-            return
-
-    def __set_interlock(self, value: bool):
-        """Callback function for Interlock attribute."""
-        _logger.debug(f'Interlock set to {value}')
-        if self.attributes['Interlock'].value == value:
-            return
-        self.set_interlock(value)
-
-    def set_interlock(self, value: bool):
-        """Set Interlock attribute with safety checks."""
-        # don't set Interlock to False if IntlEn is False
-        if not self.attributes['IntlEn'].value:
-            self.attributes['Interlock'].set_value(True)
-            return
-        if self.attributes['Interlock'].value != value:
-            self.attributes['Interlock'].set_value(value)
-            self._expect_save_pos()
-
-    def __set_protect(self, value: bool):
-        """Callback function for Protect attribute."""
-        _logger.debug('Protect set to %s' % value)
-        if self.attributes['Protect'].value == value:
-            return
-        self.set_protect(value)
-
-    def set_protect(self, value: bool):
-        """Set Protect attribute with safety checks.  
-        Does not allow resetting Protect by default."""
-        if not self.attributes['ProtEn'].value:
-            self.attributes['Protect'].set_value(True)
-            return
-
-        if self.__reset_protect:
-            self.attributes['Protect'].set_value(True)
-            self.__reset_protect = False
-        else:
-            self.attributes['Protect'].set_value(False)
-        self._expect_save_pos()
 
     def get_open_fbk(self):
         return self.attributes['OpenFbk'].value
@@ -963,7 +974,7 @@ class MonBinVlv(BinVlv):
                 self._run_close_vlv()
                 self.attributes['CloseOp'].set_value(False)
 
-    def set_reset_op(self, value: bool):
+    def _set_reset_op(self, value: bool):
         _logger.debug('ResetOp set to %s' % value)
         if self.op_src_mode.attributes['StateOpAct'].value and value:
             if self.attributes['MonEn'].value:
@@ -984,15 +995,14 @@ class BinDrv(SUCActiveElement):
 
         self.op_src_mode = OperationMode()
 
+        self.locks = Locks(perm_en, intl_en, prot_en, self._expect_save_pos)
+
         self.rev_fbk_calc = rev_fbk_calc
         self.fwd_fbk_calc = fwd_fbk_calc
 
         self.safe_pos = safe_pos
         self.fwd_en = fwd_en
         self.rev_en = rev_en
-        self.perm_en = perm_en
-        self.intl_en = intl_en
-        self.prot_en = prot_en
 
         self._add_attribute(Attribute('SafePos', bool, init_value=safe_pos))
         self._add_attribute(Attribute('SafePosAct', bool, init_value=False)
@@ -1012,13 +1022,7 @@ class BinDrv(SUCActiveElement):
         self._add_attribute(Attribute('FwdFbkCalc', bool, init_value=fwd_fbk_calc))
         self._add_attribute(Attribute('FwdFbk', bool, init_value=False))
         self._add_attribute(Attribute('Trip', bool, init_value=True))
-        self._add_attribute(Attribute('PermEn', bool, init_value=perm_en))
-        self._add_attribute(Attribute('Permit', bool, init_value=0))
-        self._add_attribute(Attribute('IntlEn', bool, init_value=intl_en))
-        self._add_attribute(Attribute('Interlock', bool, init_value=0))
-        self._add_attribute(Attribute('ProtEn', bool, init_value=prot_en))
-        self._add_attribute(Attribute('Protect', bool, init_value=0))
-        self._add_attribute(Attribute('ResetOp', bool, init_value=0, sub_cb=self.set_reset_op))
+        self._add_attribute(Attribute('ResetOp', bool, init_value=0, sub_cb=self._set_reset_op))
         self._add_attribute(Attribute('ResetAut', bool, init_value=0, sub_cb=self.set_reset_aut))
 
     def _expect_save_pos(self):
@@ -1035,14 +1039,7 @@ class BinDrv(SUCActiveElement):
             self._stop_drv()
 
     def _run_allowed(self):
-        if self.attributes['PermEn'].value and self.attributes['Permit'].value == 0:
-            _logger.debug('Permission is not given')
-            return False
-        if self.attributes['IntlEn'].value and self.attributes['Interlock'].value == 0:
-            _logger.debug('Interlock is active')
-            return False
-        if self.attributes['ProtEn'].value and self.attributes['Protect'].value == 0:
-            _logger.debug('Protect is active')
+        if not self.locks._run_allowed():
             return False
         if not self.attributes['Trip'].value:
             _logger.debug('tripped')
@@ -1069,12 +1066,6 @@ class BinDrv(SUCActiveElement):
             self._stop_drv()
             self.attributes['StopOp'].set_value(False)
 
-    def set_reset_op(self, value: bool):
-        _logger.debug('ResetOp set to %s' % value)
-        if self.op_src_mode.attributes['StateOpAct'].value and value:
-            self._reset_drv()
-            self.attributes['ResetOp'].set_value(False)
-
     def set_fwd_aut(self, value: bool):
         _logger.debug('FwdAut set to %s' % value)
         if self.op_src_mode.attributes['StateAutAct'].value and self.fwd_en:
@@ -1091,11 +1082,6 @@ class BinDrv(SUCActiveElement):
         _logger.debug('StopAut set to %s' % value)
         if self.op_src_mode.attributes['StateAutAct'].value and value:
             self._stop_drv()
-
-    def set_reset_aut(self, value: bool):
-        _logger.debug('ResetAut set to %s' % value)
-        if self.op_src_mode.attributes['StateAutAct'].value and value:
-            self._reset_drv()
 
     def _run_fwd_drv(self):
         self.attributes['FwdCtrl'].set_value(True)
@@ -1122,8 +1108,8 @@ class BinDrv(SUCActiveElement):
             self.attributes['RevFbk'].set_value(False)
 
     def _reset_drv(self):
-        if self.attributes['ProtEn'].value and self.attributes['Protect'].value == 0:
-            self.attributes['Protect'].set_value(True)
+        if self.locks.attributes['ProtEn'].value and self.locks.attributes['Protect'].value == 0:
+            self.locks.set_protect(True, reset=True)
             self.attributes['SafePosAct'].set_value(False)
         self._stop_drv()
 
@@ -1140,29 +1126,6 @@ class BinDrv(SUCActiveElement):
     def set_trip(self, value: bool):
         self.attributes['Trip'].set_value(value)
         _logger.debug('Trip set to %s' % value)
-        self._expect_save_pos()
-
-    def set_permit(self, value: bool):
-        if not self.attributes['PermEn'].value:
-            value = True
-        self.attributes['Permit'].set_value(value)
-        _logger.debug('Permit set to %s' % value)
-        self.attributes['SafePosAct'].set_value(False)
-
-    def set_interlock(self, value: bool):
-        if not self.attributes['IntlEn'].value:
-            value = True
-        self.attributes['Interlock'].set_value(value)
-        _logger.debug('Interlock set to %s' % value)
-        self._expect_save_pos()
-
-    def set_protect(self, value: bool):
-        if not self.attributes['ProtEn'].value:
-            value = True
-        if value:
-            self._reset_drv()
-        self.attributes['Protect'].set_value(value)
-        _logger.debug('Protect set to %s' % value)
         self._expect_save_pos()
 
     def get_fwd_fbk(self):
@@ -1322,7 +1285,7 @@ class MonBinDrv(BinDrv):
             self._stop_drv()
             self.attributes['StopOp'].set_value(False)
 
-    def set_reset_op(self, value: bool):
+    def _set_reset_op(self, value: bool):
         _logger.debug('ResetOp set to %s' % value)
         if self.op_src_mode.attributes['StateOpAct'].value and value:
             if self.attributes['MonEn'].value:
@@ -1384,9 +1347,11 @@ class AnaDrv(SUCActiveElement):
         """
         Analog Drive (AnaDrv). Parameter names correspond attribute names in VDI/VDE/NAMUR 2658.
         """
-        super().__init__(tag_name, tag_description)
+        super().__init__(tag_name, tag_description, perm_en, intl_en, prot_en)
 
         self.op_src_mode = OperationSourceModeElement()
+
+        self.locks = Locks(perm_en, intl_en, prot_en, self._expect_save_pos)
 
         self.rpm_min = rpm_min
         self.rpm_max = rpm_max
@@ -1400,9 +1365,6 @@ class AnaDrv(SUCActiveElement):
         self.safe_pos = safe_pos
         self.fwd_en = fwd_en
         self.rev_en = rev_en
-        self.perm_en = perm_en
-        self.intl_en = intl_en
-        self.prot_en = prot_en
 
         self._add_attribute(Attribute('SafePos', bool, init_value=safe_pos))
         self._add_attribute(Attribute('SafePosAct', bool, init_value=True))
@@ -1432,13 +1394,7 @@ class AnaDrv(SUCActiveElement):
         self._add_attribute(Attribute('RpmFbkCalc', bool, init_value=rpm_fbk_calc))
         self._add_attribute(Attribute('RpmFbk', float, init_value=rpm_min))
         self._add_attribute(Attribute('Trip', bool, init_value=True))
-        self._add_attribute(Attribute('PermEn', bool, init_value=perm_en))
-        self._add_attribute(Attribute('Permit', bool, init_value=0))
-        self._add_attribute(Attribute('IntlEn', bool, init_value=intl_en))
-        self._add_attribute(Attribute('Interlock', bool, init_value=0))
-        self._add_attribute(Attribute('ProtEn', bool, init_value=prot_en))
-        self._add_attribute(Attribute('Protect', bool, init_value=0))
-        self._add_attribute(Attribute('ResetOp', bool, init_value=0, sub_cb=self.set_reset_op))
+        self._add_attribute(Attribute('ResetOp', bool, init_value=0, sub_cb=self._set_reset_op))
         self._add_attribute(Attribute('ResetAut', bool, init_value=0, sub_cb=self.set_reset_aut))
 
     def _expect_save_pos(self):
@@ -1455,14 +1411,7 @@ class AnaDrv(SUCActiveElement):
             self._stop_drv()
 
     def _run_allowed(self):
-        if self.attributes['PermEn'].value and self.attributes['Permit'].value == 0:
-            _logger.debug('Permission is not given')
-            return False
-        if self.attributes['IntlEn'].value and self.attributes['Interlock'].value == 0:
-            _logger.debug('Interlock is active')
-            return False
-        if self.attributes['ProtEn'].value and self.attributes['Protect'].value == 0:
-            _logger.debug('Protect is active')
+        if not self.locks._run_allowed():
             return False
         if not self.attributes['Trip'].value:
             _logger.debug('Drive protection triggered')
@@ -1489,7 +1438,7 @@ class AnaDrv(SUCActiveElement):
             self._stop_drv()
             self.attributes['StopOp'].set_value(False)
 
-    def set_reset_op(self, value: bool):
+    def _set_reset_op(self, value: bool):
         _logger.debug('ResetOp set to %s' % value)
         if self.op_src_mode.attributes['StateOpAct'].value and value:
             self._reset_drv()
@@ -1542,8 +1491,8 @@ class AnaDrv(SUCActiveElement):
             self.attributes['RevFbk'].set_value(False)
 
     def _reset_drv(self):
-        if self.attributes['ProtEn'].value and self.attributes['Protect'].value == 0:
-            self.attributes['Protect'].set_value(True)
+        if self.locks.attributes['ProtEn'].value and self.locks.attributes['Protect'].value == 0:
+            self.locks.set_protect(True, reset=True)
             self.attributes['SafePosAct'].set_value(False)
         self._stop_drv()
 
@@ -1604,29 +1553,6 @@ class AnaDrv(SUCActiveElement):
     def set_trip(self, value: bool):
         self.attributes['Trip'].set_value(value)
         _logger.debug('Trip set to %s' % value)
-        self._expect_save_pos()
-
-    def set_permit(self, value: bool):
-        if not self.attributes['PermEn'].value:
-            value = True
-        self.attributes['Permit'].set_value(value)
-        _logger.debug('Permit set to %s' % value)
-        self._expect_save_pos()
-
-    def set_interlock(self, value: bool):
-        if not self.attributes['IntlEn'].value:
-            value = True
-        self.attributes['Interlock'].set_value(value)
-        _logger.debug('Interlock set to %s' % value)
-        self._expect_save_pos()
-
-    def set_protect(self, value: bool):
-        if not self.attributes['ProtEn'].value:
-            value = True
-        if value:
-            self._reset_drv()
-        self.attributes['Protect'].set_value(value)
-        _logger.debug('Protect set to %s' % value)
         self._expect_save_pos()
 
     def get_rpm(self):
@@ -1867,7 +1793,7 @@ class MonAnaDrv(AnaDrv):
             self._stop_drv()
             self.attributes['StopOp'].set_value(False)
 
-    def set_reset_op(self, value: bool):
+    def _set_reset_op(self, value: bool):
         _logger.debug('ResetOp set to %s' % value)
         if self.op_src_mode.attributes['StateOpAct'].value and value:
             if self.attributes['MonEn'].value:
