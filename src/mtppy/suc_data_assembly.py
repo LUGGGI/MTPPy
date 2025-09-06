@@ -34,6 +34,20 @@ class SUCOperationElement(SUCDataAssembly):
         super().__init__(tag_name, tag_description)
         self._add_attribute(Attribute('OSLevel', int, init_value=0))
 
+    @abstractmethod
+    def set_v_int(self, value):
+        """
+        Set VInt if StateIntAct.
+        """
+        pass
+
+    @abstractmethod
+    def get_v_out(self):
+        """
+        Get the current value of VOut (current operation value).
+        """
+        pass
+
 
 class SUCParameterElement(SUCDataAssembly):
     def __init__(self, tag_name: str, tag_description: str):

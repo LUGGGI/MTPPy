@@ -31,7 +31,8 @@ class AnaMan(SUCOperationElement):
         self._add_attribute(Attribute('VSclMin', float, init_value=v_scl_min))
         self._add_attribute(Attribute('VSclMax', float, init_value=v_scl_max))
         self._add_attribute(Attribute('VUnit', int, init_value=v_unit))
-        self._add_attribute(Attribute('VMan', float, init_value=init_value, sub_cb=self.set_v_man))
+        self._add_attribute(
+            Attribute('VMan', float, init_value=init_value, sub_cb=self._set_v_man))
         self._add_attribute(Attribute('VMin', float, init_value=v_min))
         self._add_attribute(Attribute('VMax', float, init_value=v_max))
         self._add_attribute(Attribute('VRbk', float, init_value=init_value))
@@ -40,7 +41,7 @@ class AnaMan(SUCOperationElement):
     def valid_value(self, value: float) -> bool:
         return self.v_min <= value <= self.v_max
 
-    def set_v_man(self, value: float):
+    def _set_v_man(self, value: float):
         _logger.debug(f"VMan set to {value}")
         if self.valid_value(value):
             self.set_v_out(value)
@@ -86,7 +87,7 @@ class AnaManInt(AnaMan):
         self._add_attribute(Attribute('WQC', int, init_value=0))
         self._add_attribute(Attribute('VInt', float, init_value=init_value, sub_cb=self.set_v_int))
 
-    def set_v_man(self, value: float):
+    def _set_v_man(self, value: float):
         _logger.debug(f"VMan set to {value}")
         if self.op_src_mode.attributes['SrcManAct'].value and self.valid_value(value):
             self.set_v_out(value)
@@ -119,7 +120,7 @@ class DIntMan(SUCOperationElement):
         self._add_attribute(Attribute('VSclMin', int, init_value=v_scl_min))
         self._add_attribute(Attribute('VSclMax', int, init_value=v_scl_max))
         self._add_attribute(Attribute('VUnit', int, init_value=v_unit))
-        self._add_attribute(Attribute('VMan', int, init_value=init_value, sub_cb=self.set_v_man))
+        self._add_attribute(Attribute('VMan', int, init_value=init_value, sub_cb=self._set_v_man))
         self._add_attribute(Attribute('VMin', int, init_value=v_min))
         self._add_attribute(Attribute('VMax', int, init_value=v_max))
         self._add_attribute(Attribute('VRbk', int, init_value=init_value))
@@ -128,7 +129,7 @@ class DIntMan(SUCOperationElement):
     def valid_value(self, value: int) -> bool:
         return self.v_min <= value <= self.v_max
 
-    def set_v_man(self, value: int):
+    def _set_v_man(self, value: int):
         _logger.debug(f"VMan set to {value}")
         if self.valid_value(value):
             self.set_v_out(value)
@@ -174,7 +175,7 @@ class DIntManInt(DIntMan):
         self._add_attribute(Attribute('WQC', int, init_value=0))
         self._add_attribute(Attribute('VInt', int, init_value=init_value, sub_cb=self.set_v_int))
 
-    def set_v_man(self, value: int):
+    def _set_v_man(self, value: int):
         _logger.debug(f"VMan set to {value}")
         if self.op_src_mode.attributes['SrcManAct'].value and self.valid_value(value):
             self.set_v_out(value)
@@ -192,21 +193,21 @@ class BinMan(SUCOperationElement):
     """
 
     def __init__(self, tag_name: str, tag_description: str = '',
-                 v_state0: str = 'Off', v_state1: str = 'On',
+                 v_state_0: str = 'Off', v_state_1: str = 'On',
                  init_value: bool = False):
         super().__init__(tag_name, tag_description)
 
-        self.v_state0 = v_state0
-        self.v_state1 = v_state1
+        self.v_state_0 = v_state_0
+        self.v_state_1 = v_state_1
 
         self._add_attribute(Attribute('VOut', bool, init_value=init_value))
-        self._add_attribute(Attribute('VState0', str, init_value=v_state0))
-        self._add_attribute(Attribute('VState1', str, init_value=v_state1))
-        self._add_attribute(Attribute('VMan', bool, init_value=init_value, sub_cb=self.set_v_man))
+        self._add_attribute(Attribute('VState0', str, init_value=v_state_0))
+        self._add_attribute(Attribute('VState1', str, init_value=v_state_1))
+        self._add_attribute(Attribute('VMan', bool, init_value=init_value, sub_cb=self._set_v_man))
         self._add_attribute(Attribute('VRbk', bool, init_value=init_value))
         self._add_attribute(Attribute('VFbk', bool, init_value=init_value))
 
-    def set_v_man(self, value: bool):
+    def _set_v_man(self, value: bool):
         _logger.debug(f"VMan set to {value}")
         self.set_v_out(value)
 
@@ -235,10 +236,10 @@ class BinManInt(BinMan):
     """
 
     def __init__(self, tag_name: str, tag_description: str = '',
-                 v_state0: str = 'Off', v_state1: str = 'On',
+                 v_state_0: str = 'Off', v_state_1: str = 'On',
                  init_value: bool = False):
         super().__init__(tag_name, tag_description,
-                         v_state0=v_state0, v_state1=v_state1,
+                         v_state_0=v_state_0, v_state_1=v_state_1,
                          init_value=init_value)
 
         self.op_src_mode = SourceMode()
@@ -247,7 +248,7 @@ class BinManInt(BinMan):
         self._add_attribute(Attribute('WQC', int, init_value=0))
         self._add_attribute(Attribute('VInt', bool, init_value=init_value, sub_cb=self.set_v_int))
 
-    def set_v_man(self, value: bool):
+    def _set_v_man(self, value: bool):
         _logger.debug(f"VMan set to {value}")
         if self.op_src_mode.attributes['SrcManAct'].value:
             self.set_v_out(value)
