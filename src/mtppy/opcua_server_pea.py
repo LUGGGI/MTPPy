@@ -162,7 +162,7 @@ class OPCUAServerPEA:
         Sets all services to idle state.
         """
         for service in self.service_set.values():
-            service.init_idle_state()
+            service._init_idle_state()
 
     def _build_opcua_server(self):
         """

@@ -28,20 +28,30 @@ class Service(SUCServiceControl):
     - execute
     - completing
 
-    Other methods can be overridden as needed.
-    By default the higher level methods (on the right side) will call the lower level methods.
-    See the following diagram for how the methods are called:
+    Additionally, you may override other state methods to implement specific behavior for 
+    those states. Those include:
+    - completed
+    - stopping
+    - stopped
+    - aborting
+    - aborted
+    - resetting
 
-    +------------+      +------------+      +------------+      +------------+      +------------+
-    | completing |  <-  |  pausing   |  <-  |  holding   |  <-  |  stopping  |  <-  |  aborting  |
-    +------------+      +------------+      +------------+      +------------+      +------------+
-                        +------------+      +------------+      +------------+      +------------+
-                    ||  |   paused   |  <-  |    held    |  <-  |  stopped   |  <-  |  aborted   |
-                        +------------+      +------------+      +------------+      +------------+
-    +------------+      +------------+      +------------+
-    |  starting  |  <-  |  resuming  |  <-  | unholding  |
-    +------------+      +------------+      +------------+
+    Some states are part of control loops that can be enabled or disabled. These states include:
+    - pause_loop
+        - pausing
+        - paused
+        - resuming
+    - hold_loop
+        - holding
+        - held
+        - unholding
 
+    Methods ending with "ing" are transitional states. After running once they will automatically
+    transition to the next state.  
+    If a function runs in a loop, it must check for the current state using `is_state(state_str)`
+    or it must check for the stop event using `get_state_stop_event()`. Because those indicate 
+    that a state transition has been requested and the function must return.
     """
 
     def __init__(self, tag_name: str, tag_description: str, exception_callback: Callable[[Exception], None] = None):
@@ -52,7 +62,7 @@ class Service(SUCServiceControl):
             tag_name (str): Tag name of the service.
             tag_description (str): Tag description of the service.
             exception_callback (Callable[[Exception], None]): Function to call
-                when an exception occurs in the thread.
+                when an exception occurs in the thread. If None just logs the exception.
         """
         super().__init__(tag_name, tag_description)
         self.exception = None
@@ -66,10 +76,10 @@ class Service(SUCServiceControl):
 
         self.state_machine = StateMachine(operation_source_mode=self.op_src_mode,
                                           procedure_control=self.procedure_control,
-                                          execution_routine=self.state_change_callback)
+                                          execution_routine=self._state_change_callback)
 
         self.thread_ctrl = ThreadControl(service_name=tag_name,
-                                         state_change_function=self.state_change,
+                                         state_change_function=self._state_change,
                                          exception_callback=exception_callback)
 
         self.op_src_mode.add_enter_offline_callback(self.state_machine.command_en_ctrl.disable_all)
@@ -78,8 +88,8 @@ class Service(SUCServiceControl):
 
         self.op_src_mode.add_exit_offline_callback(self.state_machine.command_en_ctrl.set_default)
         self.op_src_mode.add_exit_offline_callback(self.state_machine.update_command_en)
-        self.op_src_mode.add_exit_offline_callback(self.apply_configuration_parameters)
-        self.op_src_mode.add_exit_offline_callback(self.init_idle_state)
+        self.op_src_mode.add_exit_offline_callback(self._apply_configuration_parameters)
+        self.op_src_mode.add_exit_offline_callback(self._init_idle_state)
 
         self.op_src_mode.add_enter_operator_callback(
             # adds function to disable commands if no procedure is set
@@ -107,6 +117,15 @@ class Service(SUCServiceControl):
         """
         self.state_machine.command_en_ctrl.enable_pause_loop(enable)
 
+    def enable_hold_loop(self, enable: bool = True):
+        """
+        Enables or disables the hold loop.
+
+        Args:
+            enable (bool): If True, enables the hold loop. If False, disables it.
+        """
+        self.state_machine.command_en_ctrl.enable_hold_loop(enable)
+
     def enable_restart(self, enable: bool = True):
         """
         Enables or disables the restart command.
@@ -116,14 +135,30 @@ class Service(SUCServiceControl):
         """
         self.state_machine.command_en_ctrl.enable_restart(enable)
 
-    def enable_restart(self, enable: bool = True):
+    def add_configuration_parameter(self, configuration_parameter: SUCParameterElement):
         """
-        Enables or disables the restart command.
+        Adds a configuration parameter to the service.
 
         Args:
-            enable (bool): If True, enables the restart command. If False, disables it.
+            configuration_parameter (SUCParameterElement): Configuration parameter to add.
         """
-        self.state_machine.command_en_ctrl.enable_restart(enable)
+        self.configuration_parameters[configuration_parameter.tag_name] = configuration_parameter
+
+    def add_procedure(self, procedure: Procedure):
+        """
+        Adds a procedure to the service.
+
+        Args:
+            procedure (Procedure): Procedure to add.
+        """
+        self.procedures[procedure.attributes['ProcedureId'].value] = procedure
+        if procedure.attributes['IsDefault'].value:
+            self.procedure_control.default_procedure_id = procedure.attributes['ProcedureId'].value
+            self.procedure_control.attributes['ProcedureOp'].init_value = self.procedure_control.default_procedure_id
+            self.procedure_control.attributes['ProcedureInt'].init_value = self.procedure_control.default_procedure_id
+            self.procedure_control.attributes['ProcedureExt'].init_value = self.procedure_control.default_procedure_id
+            self.procedure_control.attributes['ProcedureReq'].init_value = self.procedure_control.default_procedure_id
+            self.procedure_control.set_procedure_req(self.procedure_control.default_procedure_id)
 
     def get_current_procedure(self) -> Procedure:
         """
@@ -133,28 +168,6 @@ class Service(SUCServiceControl):
             Procedure: The current procedure.
         """
         return self.procedures[self.procedure_control.get_procedure_cur()]
-
-    def init_idle_state(self):
-        """
-        Initializes the idle state.
-        """
-        self.state_change_callback()
-
-    def state_change_callback(self):
-        """
-        Callback for state changes.
-        """
-        if self.op_src_mode.attributes['StateOffAct'].value:
-            return
-
-        state_str = self.state_machine.get_current_state_str()
-        function_to_execute = eval(f'self.{state_str}')
-        self.thread_ctrl.request_state(state_str, function_to_execute)
-        self.thread_ctrl.reallocate_running_thread()
-        if state_str == 'idle':
-            self.op_src_mode.allow_switch_to_offline_mode(True)
-        else:
-            self.op_src_mode.allow_switch_to_offline_mode(False)
 
     def is_state(self, state_str):
         """
@@ -185,17 +198,39 @@ class Service(SUCServiceControl):
 
         return self.thread_ctrl.thread.stop_event
 
-    def state_change(self):
+    def _init_idle_state(self):
         """
-        Changes the state. Has to be called by each transitional state method.
+        Initializes the idle state.
+        """
+        self._state_change_callback()
+
+    def _state_change_callback(self):
+        """
+        Callback for state changes.
+        """
+        if self.op_src_mode.attributes['StateOffAct'].value:
+            return
+
+        state_str = self.state_machine.get_current_state_str()
+        function_to_execute = eval(f'self.{state_str}')
+        self.thread_ctrl.request_state(state_str, function_to_execute)
+        self.thread_ctrl.reallocate_running_thread()
+        if state_str == 'idle':
+            self.op_src_mode.allow_switch_to_offline_mode(True)
+        else:
+            self.op_src_mode.allow_switch_to_offline_mode(False)
+
+    def _state_change(self):
+        """
+        Changes the state. Is automatically called after each state function returns.
         """
         # don't automatically change state for non self-completing procedures
         if self.state_machine.get_current_state_str() == "execute":
-            if not self.is_self_completing():
+            if not self._is_self_completing():
                 return
         self.state_machine.state_change()
 
-    def is_self_completing(self) -> bool:
+    def _is_self_completing(self) -> bool:
         """
         Checks if the current Procedure is self-completing.
 
@@ -204,38 +239,13 @@ class Service(SUCServiceControl):
         """
         return self.get_current_procedure().attributes['IsSelfCompleting'].value
 
-    def add_configuration_parameter(self, configuration_parameter: SUCParameterElement):
-        """
-        Adds a configuration parameter to the service.
-
-        Args:
-            configuration_parameter (SUCParameterElement): Configuration parameter to add.
-        """
-        self.configuration_parameters[configuration_parameter.tag_name] = configuration_parameter
-
-    def apply_configuration_parameters(self):
+    def _apply_configuration_parameters(self):
         """
         Applies configuration parameters.
         """
         _logger.debug('Applying service configuration parameters')
         for configuration_parameter in self.configuration_parameters.values():
             configuration_parameter.set_v_out()
-
-    def add_procedure(self, procedure: Procedure):
-        """
-        Adds a procedure to the service.
-
-        Args:
-            procedure (Procedure): Procedure to add.
-        """
-        self.procedures[procedure.attributes['ProcedureId'].value] = procedure
-        if procedure.attributes['IsDefault'].value:
-            self.procedure_control.default_procedure_id = procedure.attributes['ProcedureId'].value
-            self.procedure_control.attributes['ProcedureOp'].init_value = self.procedure_control.default_procedure_id
-            self.procedure_control.attributes['ProcedureInt'].init_value = self.procedure_control.default_procedure_id
-            self.procedure_control.attributes['ProcedureExt'].init_value = self.procedure_control.default_procedure_id
-            self.procedure_control.attributes['ProcedureReq'].init_value = self.procedure_control.default_procedure_id
-            self.procedure_control.set_procedure_req(self.procedure_control.default_procedure_id)
 
     def idle(self):
         """
@@ -253,7 +263,7 @@ class Service(SUCServiceControl):
         """
         Starting state.
         """
-        self.state_change()
+        self._state_change()
 
     @abstractmethod
     def execute(self):
@@ -267,7 +277,7 @@ class Service(SUCServiceControl):
         """
         Completing state.
         """
-        self.state_change()
+        pass
 
     def completed(self):
         """
@@ -275,19 +285,13 @@ class Service(SUCServiceControl):
         """
         if self.state_machine.get_current_state_str() == "completed":
             _logger.debug(f"{self.tag_name} - Completed -")
-        else:
-            pass
 
     def pausing(self):
         """
-        Pausing state. If not overridden, it will call the completing method.
+        Pausing state.
         """
         if self.state_machine.get_current_state_str() == "pausing":
             _logger.debug(f"{self.tag_name} - Pausing -")
-        else:
-            pass
-        # call the completing method to also execute the logic for the completing state
-        self.completing()
 
     def paused(self):
         """
@@ -295,96 +299,62 @@ class Service(SUCServiceControl):
         """
         if self.state_machine.get_current_state_str() == "paused":
             _logger.debug(f"{self.tag_name} - Paused -")
-        else:
-            pass
 
     def resuming(self):
         """
-        Resuming state. If not overridden, it will call the starting method.
+        Resuming state.
         """
         if self.state_machine.get_current_state_str() == "resuming":
             _logger.debug(f"{self.tag_name} - Resuming -")
-        else:
-            pass
-        # call the starting method to also execute the logic for the starting state
-        self.starting()
 
     def holding(self):
         """
-        Holding state. If not overridden, it will call the pausing method.
+        Holding state.
         """
         if self.state_machine.get_current_state_str() == "holding":
             _logger.debug(f"{self.tag_name} - Holding -")
-        else:
-            pass
-        # call the pausing method to also execute the logic for the pausing state
-        self.pausing()
 
     def held(self):
         """
-        Held state. If not overridden, it will call the paused method.
+        Held state.
         """
         if self.state_machine.get_current_state_str() == "held":
             _logger.debug(f"{self.tag_name} - Held -")
-        else:
-            pass
-        # call the paused method to also execute the logic for the paused state
-        self.paused()
 
     def unholding(self):
         """
-        Unholding state. If not overridden, it will call the resuming method.
+        Unholding state.
         """
         if self.state_machine.get_current_state_str() == "unholding":
             _logger.debug(f"{self.tag_name} - Unholding -")
-        else:
-            pass
-        # call the resuming method to also execute the logic for the resuming state
-        self.resuming()
 
     def stopping(self):
         """
-        Stopping state. If not overridden, it will call the holding method.
+        Stopping state.
         """
         if self.state_machine.get_current_state_str() == "stopping":
             _logger.debug(f"{self.tag_name} - Stopping -")
-        else:
-            pass
-        # call the holding method to also execute the logic for the holding state
-        self.holding()
 
     def stopped(self):
         """
-        Stopped state. If not overridden, it will call the held method.
+        Stopped state.
         """
         if self.state_machine.get_current_state_str() == "stopped":
             _logger.debug(f"{self.tag_name} - Stopped -")
-        else:
-            pass
-        # call the held method to also execute the logic for the held state
-        self.held()
 
     def aborting(self):
         """
-        Aborting state. If not overridden, it will call the stopping method.
+        Aborting state.
         """
         if self.state_machine.get_current_state_str() == "aborting":
             _logger.debug(f"{self.tag_name} - Aborting -")
-        else:
-            pass
-        # call the stopping method to also execute the logic for the stopping state
-        self.stopping()
 
     def aborted(self):
         """
-        Aborted state. If not overridden, it will call the stopped method.
+        Aborted state.
         """
         if self.state_machine.get_current_state_str() == "aborted":
             _logger.debug(f"{self.tag_name} - Aborted -")
-        else:
-            pass
-        # call the stopped method to also execute the logic for the stopped state
-        self.stopped()
 
     def resetting(self):
         """
@@ -392,6 +362,3 @@ class Service(SUCServiceControl):
         """
         if self.state_machine.get_current_state_str() == "resetting":
             _logger.debug(f"{self.tag_name} - Resetting -")
-        else:
-            pass
-        # Reset the state machine to idle
