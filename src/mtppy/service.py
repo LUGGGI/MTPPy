@@ -10,13 +10,10 @@ from mtppy.thread_control import ThreadControl
 from mtppy.operation_source_mode import OperationSourceMode
 from mtppy.state_machine import StateMachine
 from mtppy.procedure_control import ProcedureControl
-from mtppy.state_codes import StateCodes
 from mtppy.procedure import Procedure
 from mtppy.suc_data_assembly import SUCParameterElement
 
 _logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
-
-StateCodes = StateCodes()
 
 
 class Service(SUCServiceControl):

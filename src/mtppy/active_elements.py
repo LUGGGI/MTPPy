@@ -1,6 +1,5 @@
 import logging
 import threading
-from abc import abstractmethod
 from collections.abc import Callable
 
 from mtppy.attribute import Attribute
@@ -795,6 +794,9 @@ class BinVlv(SUCActiveElement):
 
     def get_close_fbk(self):
         return self.attributes['CloseFbk'].value
+
+    def get_ctrl(self):
+        return self.attributes['Ctrl'].value
 
 
 class MonBinVlvValues:
