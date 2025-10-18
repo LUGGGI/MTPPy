@@ -62,8 +62,8 @@ class ThreadControl:
 
             self.thread = StoppableThread(target=self.run_thread, args=(self.callback_function,),
                                           name=f"{self.service_name}_{self.requested_state}")
-            self.thread.start()
             self.running_state = self.requested_state
+            self.thread.start()
 
     def run_thread(self, target_function: Callable):
         """
