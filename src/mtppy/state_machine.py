@@ -55,8 +55,12 @@ class StateMachine:
             self.command_execution(value)
 
     def command_execution(self, com_var: int):
+        # skip if command code was just reset to 0
+        if com_var == 0:
+            return
+
         if com_var not in CommandCodes.get_list_int():
-            _logger.debug(f'Command Code {com_var} does not exist')
+            _logger.warning(f'Command Code {com_var} does not exist')
             return
 
         cmd_str = CommandCodes.int_code[com_var]
