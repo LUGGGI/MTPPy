@@ -1,0 +1,737 @@
+Locks
++perm_en: bool
++intl_en: bool
++prot_en: bool
++attributes: dict
+--
++permit_status(): bool
++interlock_status(): bool
++protect_status(): bool
+-set_permit(bool): None
+-set_interlock(bool): None
+-set_protect(bool, reset=False): None
+-_run_allowed(): bool
+
+AnaVlv
++op_src_mode: OperationSourceModeElement
++locks: Locks
++pos_min: float
++pos_max: float
++pos_scl_min: float
++pos_scl_max: float
++pos_unit: int
++open_fbk_calc: bool
++close_fbk_calc: bool
++pos_fbk_calc: bool
++safe_pos: int
++safe_pos_en: bool
+--
++get_pos(): float
++get_pos_rbk(): float
++get_pos_fbk(): float
++get_open_fbk(): bool
++get_close_fbk(): bool
+-set_open_aut(bool): None
+-set_close_aut(bool): None
+-set_reset_aut(bool): None
+-set_open_op(bool): None
+-set_close_op(bool): None
+-set_pos_int(float): None
+-set_pos_man(float): None
+-set_pos_rbk(float): None
+-set_pos_fbk(float): None
+-set_open_fbk(bool): None
+-set_close_fbk(bool): None
+-_expect_save_pos(): None
+-_go_save_pos(): None
+-_run_allowed(): bool
+-_set_pos(float): None
+
+MonAnaVlv
++mon_en: bool
++mon_safe_pos: bool
++mon_stat_ti: float
++mon_dyn_ti: float
++pos_tolerance: float
+--
++start_monitor(): None
++set_stop_monitor(): None
+-monitor_static_error(): None
+-monitor_dynamic_error(): None
+-monitor_position_reached(): None
+-_handle_monitored_error(): None
+
+BinVlv
++op_src_mode: OperationMode
++locks: Locks
++open_fbk_calc: bool
++close_fbk_calc: bool
++safe_pos: int
++safe_pos_en: bool
+--
++get_open_fbk(): bool
++get_close_fbk(): bool
++get_ctrl(): bool
+-set_open_aut(bool): None
+-set_close_aut(bool): None
+-set_reset_aut(bool): None
+-set_open_op(bool): None
+-set_close_op(bool): None
+-set_ctrl(bool): None
+-_expect_save_pos(): None
+-_go_safe_pos(): None
+-_run_allowed(bool): bool
+
+MonBinVlv
++mon_en: bool
++mon_safe_pos: bool
++mon_stat_ti: float
++mon_dyn_ti: float
+--
++start_monitor(): None
++set_stop_monitor(): None
+-monitor_static_error(): None
+-monitor_dynamic_error(): None
+-_handle_monitored_error(): None
+
+BinDrv
++op_src_mode: OperationMode
++locks: Locks
++rev_fbk_calc: bool
++fwd_fbk_calc: bool
++safe_pos: int
++fwd_en: bool
++rev_en: bool
+--
++get_fwd_fbk(): bool
++get_rev_fbk(): bool
+-set_fwd_op(bool): None
+-set_rev_op(bool): None
+-set_stop_op(bool): None
+-set_fwd_aut(bool): None
+-set_rev_aut(bool): None
+-set_stop_aut(bool): None
+-_expect_save_pos(): None
+-_go_safe_pos(): None
+-_run_allowed(): bool
+
+MonBinDrv
++mon_en: bool
++mon_safe_pos: bool
++mon_stat_ti: float
++mon_dyn_ti: float
+--
++start_monitor(): None
++set_stop_monitor(): None
+-monitor_static_error(): None
+-monitor_dynamic_error(): None
+-_handle_monitored_error(): None
+
+AnaDrv
++op_src_mode: OperationSourceModeElement
++locks: Locks
++rpm_min: float
++rpm_max: float
++rpm_scl_min: float
++rpm_scl_max: float
++rpm_unit: int
++rev_fbk_calc: bool
++fwd_fbk_calc: bool
++rpm_fbk_calc: bool
++safe_pos: int
++fwd_en: bool
++rev_en: bool
+--
++get_rpm(): float
++get_rpm_rbk(): float
++get_rpm_fbk(): float
+-set_fwd_op(bool): None
+-set_rev_op(bool): None
+-set_stop_op(bool): None
+-set_fwd_aut(bool): None
+-set_rev_aut(bool): None
+-set_stop_aut(bool): None
+-set_rpm_int(float): None
+-set_rpm_man(float): None
+-set_rpm_rbk(float): None
+-set_rpm_fbk(float): None
+-set_trip(bool): None
+-_expect_save_pos(): None
+-_go_save_pos(): None
+-_run_allowed(): bool
+
+MonAnaDrv
++mon_en: bool
++mon_safe_pos: bool
++mon_stat_ti: float
++mon_dyn_ti: float
++rpm_ah_en: bool
++rpm_al_en: bool
++rpm_ah_lim: float
++rpm_al_lim: float
+--
++start_monitor(): None
++set_stop_monitor(): None
+-monitor_static_error(): None
+-monitor_dynamic_error(): None
+-monitor_rpm_error(): None
+-monitor_rpm_high_limit(): None
+-monitor_rpm_low_limit(): None
+-_handle_monitored_error(): None
+
+PIDController
++kp: float
++ki: float
++kd: float
++mv_min: float
++mv_max: float
++sp: float
++pv: float
++mv: float
++sample_time: float
+--
++start(): None
++stop(): None
++set_sp(float): None
++set_pv(float): None
++get_mv(): float
++set_kp(float): None
++set_ki(float): None
++set_kd(float): None
+
+PIDCtrl
++op_src_mode: OperationSourceModeElement
++pv_scl_min: float
++pv_scl_max: float
++pv_unit: int
++sp_scl_min: float
++sp_scl_max: float
++sp_unit: int
++sp_int_min: float
++sp_int_max: float
++sp_man_min: float
++sp_man_max: float
++mv_min: float
++mv_max: float
++mv_unit: int
++mv_scl_min: float
++mv_scl_max: float
++P: float
++Ti: float
++Td: float
+--
++get_mv(): float
++get_sp(): float
++set_pv(float): None
++set_sp_man(float): None
++set_sp_int(float): None
++set_mv_man(float): None
+-set_p(float): None
+-set_ti(float): None
+-set_td(float): None
+-_start_aut_mv_update_loop(): None
+-_stop_aut_mv_update_loop(): None
+
+Attribute
++name: str
++type: type
++init_value: Any
++value: Any
++comm_obj: Any
++sub_cb: Callable[[Any], None]
+--
++set_value(Any): bool
++attach_communication_object(Any): None
++attach_subscription_callback(Callable[[Any], None]): None
++remove_subscription_callback(): None
+-_correct_type(Any): Any
+
+CommandCodes
++reset: int
++start: int
++stop: int
++hold: int
++unhold: int
++pause: int
++resume: int
++abort: int
++restart: int
++complete: int
++int_code: dict
+--
++get_list_int(): list
++get_list_str(): list
+
+CommandEnControl
++command_en: dict
++hold_enabled: bool
++pause_enabled: bool
++restart_enabled: bool
+--
++set_default(): None
++disable_all(): None
++is_enabled(str): bool
++get_command_en(): int
++set_command_en(str, bool): None
++enable_hold_loop(bool): None
++enable_pause_loop(bool): None
++enable_restart(bool): None
++disable_restart_temporarily(): None
++restore_restart(): None
++execute(str): None
+
+OPCUACommunicationObject
++opcua_node_obj: object
++node_id: str
++write_value_callback: Callable
+--
+
+AnaView
++v_scl_min: float
++v_scl_max: float
++v_unit: int
+--
++set_v(float): None
+
+BinView
++v_state_0: str
++v_state_1: str
+--
++set_v(bool): None
+
+DIntView
++v_scl_min: int
++v_scl_max: int
++v_unit: int
+--
++set_v(int): None
+
+StringView
+--
++set_v(str): None
+
+MTPGenerator
++template_path: str
++writer_infos: dict
++tree: ET.ElementTree
++root: ET.Element
++export_path: str
++instance_hierarchy_mtp: ET.Element
++instance_hierarchy_service: ET.Element
++module_type_package: ET.Element
++communication_set: ET.Element
++services_set: ET.Element
++instance_list: ET.Element
++source_list: ET.Element
++opcua_server: ET.Element
++service: ET.Element
++service_procedure: ET.Element
+--
++edit_writer_information(): None
++add_module_type_package(str, str, str): None
++create_instance(SUCDataAssembly, str): ET.Element
++add_data_assembly_to_instance_list(str, str, str, str): ET.Element
++create_components_for_services(SUCDataAssembly, str): str
++add_components_to_services(SUCDataAssembly, str, str): str
++add_opcua_server(str): None
++add_external_interface(str, int, str, int): None
++apply_add_supported_role_class(): None
++export_manifest(): None
++pretty_print(ET.Element, int): None
+-_init_manifest(): None
+-_init_instance_hierarchies(): None
+-_add_communication_set(): None
+-_add_services_set(str): None
+-_add_service_to_service_set(str, str, str): None
+-_add_linked_attr(ET.Element, str): None
+-_generate_attributes(ET.Element, str, str, str): None
+-_random_id_generator(): str
+
+OPCUAServerPEA
++service_set: dict[str, Service]
++active_elements: dict[str, SUCActiveElement]
++indicator_elements: dict[str, SUCIndicatorElement]
++operation_elements: dict[str, SUCOperationElement]
++custom_data_assembly_sets: dict[str, dict[str, SUCDataAssembly]]
++endpoint: str
++opcua_server: Server
++opcua_ns: int
++subscription_list: SubscriptionList
++mtp: MTPGenerator
++_folders: list[str]
++_leaves: list[str]
+--
++add_service(Service): None
++add_active_element(SUCActiveElement): None
++add_indicator_element(SUCIndicatorElement): None
++add_operation_element(SUCOperationElement): None
++add_custom_data_assembly_set(str, dict[str, SUCDataAssembly]): None
++add_folders(list[str]): None
++add_leaves(list[str]): None
++get_opcua_server(): Server
++get_opcua_ns(): int
++run_opcua_server(): None
++set_services_in_idle(): None
+-_init_opcua_server(): None
+-_build_opcua_server(): None
+-_create_opcua_element(dict[str, SUCDataAssembly], str): None
+-_create_opcua_objects_for_folders(SUCDataAssembly, str, Node, str): None
+-_create_opcua_objects_for_leaves(SUCDataAssembly, str, Node, ET.Element): None
+-_start_subscription(): None
+-_infer_data_type(type): ua.VariantType
+-_get_objects_attributes(object): dict
+
+SubscriptionList
++sub_list: dict
+--
++append(Node, Callable): None
++get_nodeid_list(): list
++get_callback(Node): Callable
+
+Marshalling
++subscription_list: SubscriptionList
+--
++import_subscription_list(SubscriptionList): None
++datachange_notification(Node, Any, Any): None
++find_set_callback(Node): Callable
+
+AnaMan
++v_min: float
++v_max: float
++v_scl_min: float
++v_scl_max: float
++v_unit: int
+--
++valid_value(float): bool
++set_v_out(float): None
++set_v_rbk(float): None
++set_v_fbk(float): None
++get_v_out(): float
+
+AnaManInt
++op_src_mode: SourceMode
+--
++set_v_int(float): None
+
+DIntMan
++v_min: int
++v_max: int
++v_scl_min: int
++v_scl_max: int
++v_unit: int
+--
++valid_value(int): bool
++set_v_out(int): None
++set_v_rbk(int): None
++set_v_fbk(int): None
++get_v_out(): int
+
+DIntManInt
++op_src_mode: SourceMode
+--
++set_v_int(int): None
+
+BinMan
++v_state_0: str
++v_state_1: str
+--
++set_v_out(bool): None
++set_v_rbk(bool): None
++set_v_fbk(bool): None
++get_v_out(): bool
+
+BinManInt
++op_src_mode: SourceMode
+--
++set_v_int(bool): None
+
+OperationSourceMode
++attributes: dict[str, Attribute]
++switch_to_offline_mode_allowed: bool
++enter_offline_callbacks: list[callable]
++exit_offline_callbacks: list[callable]
++enter_operator_callbacks: list[callable]
++exit_operator_callbacks: list[callable]
++enter_automatic_callbacks: list[callable]
++exit_automatic_callbacks: list[callable]
++linked_op_src_modes: list[OperationSourceMode]
+--
++allow_switch_to_offline_mode(bool): None
++add_enter_offline_callback(callable): None
++add_exit_offline_callback(callable): None
++add_enter_operator_callback(callable): None
++add_exit_operator_callback(callable): None
++add_enter_automatic_callback(callable): None
++add_exit_automatic_callback(callable): None
++add_linked_op_src_mode(OperationSourceMode): None
++set_state_channel(bool): None
++set_state_aut_aut(bool): None
++set_state_aut_op(bool): None
++set_state_off_aut(bool): None
++set_state_off_op(bool): None
++set_state_op_aut(bool): None
++set_state_op_op(bool): None
++set_src_channel(bool): None
++set_src_ext_aut(bool): None
++set_src_ext_op(bool): None
++set_src_int_aut(bool): None
++set_src_int_op(bool): None
+
+OperationMode
++attributes: dict[str, Attribute]
+--
++set_state_channel(bool): None
++set_state_off_aut(bool): None
++set_state_op_aut(bool): None
++set_state_aut_aut(bool): None
++set_state_off_op(bool): None
++set_state_op_op(bool): None
++set_state_aut_op(bool): None
++is_opmode_off(): bool
++is_opmode_aut(): bool
++is_opmode_op(): bool
+
+SourceMode
++attributes: dict[str, Attribute]
+--
++set_src_channel(bool): None
++set_src_man_aut(bool): None
++set_src_man_op(bool): None
++set_src_int_aut(bool): None
++set_src_int_op(bool): None
++is_srcmode_int(): bool
++is_srcmode_man(): bool
+
+OperationSourceModeElement
+--
+
+AnaServParam
++op_src_mode: OperationSourceMode
++v_min: float
++v_max: float
++v_scl_min: float
++v_scl_max: float
++v_unit: int
+--
++set_v_op(float): None
++set_v_int(float): None
++set_v_ext(float): None
++set_v_req(float): None
++set_v_out(): None
++get_v_out(): float
++set_v_fbk(float): None
+
+BinServParam
++op_src_mode: OperationSourceMode
++v_state_0: str
++v_state_1: str
+--
++set_v_op(bool): None
++set_v_int(bool): None
++set_v_ext(bool): None
++set_v_req(bool): None
++set_v_out(): None
++get_v_out(): bool
++set_v_fbk(bool): None
+
+DIntServParam
++op_src_mode: OperationSourceMode
++v_min: int
++v_max: int
++v_scl_min: int
++v_scl_max: int
++v_unit: int
+--
++set_v_op(int): None
++set_v_int(int): None
++set_v_ext(int): None
++set_v_req(int): None
++set_v_out(): None
++get_v_out(): int
++set_v_fbk(int): None
+
+StringServParam
++op_src_mode: OperationSourceMode
+--
++set_v_op(str): None
++set_v_int(str): None
++set_v_ext(str): None
++set_v_req(str): None
++set_v_out(): None
++get_v_out(): str
++set_v_fbk(str): None
+
+ProcedureControl
++attributes: dict[str, Attribute]
++procedures: dict
++op_src_mode: OperationSourceMode
++default_procedure_id: int
+--
++set_procedure_op(int): None
++set_procedure_int(int): None
++set_procedure_ext(int): None
++set_procedure_req(int): None
++set_procedure_cur(): None
++get_procedure_cur(): int
++get_procedure_req(): int
++apply_procedure_parameters(): None
+
+Procedure
++procedure_parameters: dict[str, SUCParameterElement]
++process_value_ins: dict
++report_values: dict[str, SUCIndicatorElement]
++process_value_outs: dict[str, SUCIndicatorElement]
+--
++add_procedure_parameter(SUCParameterElement): None
++add_procedure_value_in(Any): None
++add_report_value(SUCIndicatorElement): None
++add_procedure_value_out(SUCIndicatorElement): None
++apply_procedure_parameters(): None
+
+Service
++exception: Exception
++op_src_mode: OperationSourceMode
++configuration_parameters: dict
++procedures: dict
++procedure_control: ProcedureControl
++state_machine: StateMachine
++thread_ctrl: ThreadControl
+--
++enable_pause_loop(bool): None
++enable_hold_loop(bool): None
++enable_restart(bool): None
++add_configuration_parameter(SUCParameterElement): None
++add_procedure(Procedure): None
++get_current_procedure(): Procedure
++is_state(str): bool
++get_state_stop_event(): Event
++idle(): None
++starting(): None
++execute(): None
++completing(): None
++completed(): None
++pausing(): None
++paused(): None
++resuming(): None
++holding(): None
++held(): None
++unholding(): None
++stopping(): None
++stopped(): None
++aborting(): None
++aborted(): None
++resetting(): None
+-_init_idle_state(): None
+-_state_change_callback(): None
+-_state_change(): None
+-_is_self_completing(): bool
+-_apply_configuration_parameters(): None
+
+StateCodes
++stopped: int
++starting: int
++idle: int
++paused: int
++execute: int
++stopping: int
++aborting: int
++aborted: int
++holding: int
++held: int
++unholding: int
++pausing: int
++resuming: int
++resetting: int
++completing: int
++completed: int
++int_code: dict[int, str]
+--
++get_list_int(): list[int]
++get_list_str(): list[str]
+
+StateMachine
++attributes: dict[str, Attribute]
++op_src_mode: OperationSourceMode
++procedure_control: ProcedureControl
++execution_routine: callable
++command_en_ctrl: CommandEnControl
++act_state: int
++prev_state: int
+--
++set_command_op(int): None
++set_command_int(int): None
++set_command_ext(int): None
++command_execution(int): None
++start(): None
++restart(): None
++complete(): None
++pause(): None
++resume(): None
++reset(): None
++hold(): None
++unhold(): None
++stop(): None
++abort(): None
++state_change(): None
++update_command_en(): None
++get_current_state_str(): str
++disable_commands_if_no_procedure(int): None
+
+SUCDataAssembly
++tag_name: str
++tag_description: str
++attributes: dict[str, Attribute]
+--
++_add_attribute(Attribute): None
+
+SUCIndicatorElement
+--
++set_v(Any): None
+
+SUCOperationElement
+--
++set_v_int(Any): None
++get_v_out(): Any
+
+SUCActiveElement
+--
+
+SUCDiagnosticElement
+--
+
+SUCServiceElement
+--
+
+SUCServiceControl
+--
+
+SUCProcedureHealthView
+--
+
+SUCParameterElement
+--
++set_v_int(Any): None
++get_v_out(): Any
++set_v_fbk(Any): None
+
+SUCServiceProcedure
+--
+
+ThreadControl
++service_name: str
++state_change_function: Callable
++thread: StoppableThread
++running_state: str
++requested_state: str
++callback_function: Callable
++exception_callback: Callable[[Exception], None]
+--
++request_state(str, Callable): None
++reallocate_running_thread(): None
++run_thread(Callable): None
++stop_thread(bool): None
+
+StoppableThread
++stop_event: Event
+--
++stop(): None
