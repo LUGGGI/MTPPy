@@ -17,7 +17,7 @@ class StateCodes:
         self.unholding = 4096
         self.pausing = 8192
         self.resuming = 16384
-        self.resetting = 32678
+        self.resetting = 32768
         self.completing = 65536
         self.completed = 131072
 
@@ -36,7 +36,7 @@ class StateCodes:
         self.int_code[4096] = 'unholding'
         self.int_code[8192] = 'pausing'
         self.int_code[16384] = 'resuming'
-        self.int_code[32678] = 'resetting'
+        self.int_code[32768] = 'resetting'
         self.int_code[65536] = 'completing'
         self.int_code[131072] = 'completed'
 
