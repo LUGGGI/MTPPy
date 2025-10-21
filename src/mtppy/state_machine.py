@@ -1,5 +1,7 @@
 import logging
 
+from collections.abc import Callable
+
 from mtppy.attribute import Attribute
 from mtppy.state_codes import StateCodes
 from mtppy.command_codes import CommandCodes
@@ -9,20 +11,20 @@ from mtppy.procedure_control import ProcedureControl
 StateCodes = StateCodes()
 CommandCodes = CommandCodes()
 
-_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+_logger = logging.getLogger(__name__)
 
 
 class StateMachine:
     def __init__(self, operation_source_mode: OperationSourceMode,
                  procedure_control: ProcedureControl,
-                 execution_routine: callable):
+                 execution_routine: Callable[[], None]):
         """
         Represents a state machine for a service.
 
         Args:
             operation_source_mode (OperationSourceMode): Operation and source mode control.
             procedure_control (ProcedureControl): Procedure control.
-            execution_routine (callable): Execution routine for state changing.
+            execution_routine (Callable): Execution routine for state changing.
         """
 
         self.attributes = {
@@ -37,6 +39,7 @@ class StateMachine:
         self.op_src_mode: OperationSourceMode = operation_source_mode
         self.procedure_control: ProcedureControl = procedure_control
         self.execution_routine = execution_routine
+
         self.command_en_ctrl = CommandEnControl()
 
         self.act_state = StateCodes.idle
@@ -86,18 +89,14 @@ class StateMachine:
         if self.command_en_ctrl.is_enabled('start'):
 
             self.procedure_control.set_procedure_cur()
-            self.procedure_control.attributes['ProcedureOp'].set_value(0)
-            self.procedure_control.attributes['ProcedureInt'].set_value(0)
-            self.procedure_control.attributes['ProcedureExt'].set_value(0)
+            self.procedure_control.reset_procedure_commands()
             self.procedure_control.apply_procedure_parameters()
             self._change_state_to(StateCodes.starting)
 
     def restart(self):
         if self.command_en_ctrl.is_enabled('restart'):
             self.procedure_control.set_procedure_cur()
-            self.procedure_control.attributes['ProcedureOp'].set_value(0)
-            self.procedure_control.attributes['ProcedureInt'].set_value(0)
-            self.procedure_control.attributes['ProcedureExt'].set_value(0)
+            self.procedure_control.reset_procedure_commands()
             self.procedure_control.apply_procedure_parameters()
             self._change_state_to(StateCodes.starting)
 

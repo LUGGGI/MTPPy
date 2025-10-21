@@ -3,7 +3,7 @@ import logging
 from mtppy.attribute import Attribute
 from mtppy.operation_source_mode import OperationSourceMode
 
-_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+_logger = logging.getLogger(__name__)
 
 
 class ProcedureControl:
@@ -27,6 +27,9 @@ class ProcedureControl:
         self.op_src_mode = service_op_src_mode
         self.default_procedure_id = None
 
+        # will be set to True when resetting procedure commands to avoid also setting ProcedureReq to 0
+        self.__resetting_procedure_commands = 0
+
     def set_procedure_op(self, value: int):
         _logger.debug('ProcedureOP set to %s' % value)
         if self.op_src_mode.attributes['StateOpAct'].value:
@@ -42,6 +45,15 @@ class ProcedureControl:
         if self.op_src_mode.attributes['StateAutAct'].value and self.op_src_mode.attributes['SrcExtAct'].value:
             self.set_procedure_req(value)
 
+    def reset_procedure_commands(self):
+        # ignore the next two invalid ProcedureReq settings
+        # one from direct setting and one from data change callback
+        # TODO: improve this logic
+        self.__resetting_procedure_commands = 2
+        self.attributes['ProcedureOp'].set_value(0)
+        self.attributes['ProcedureInt'].set_value(0)
+        self.attributes['ProcedureExt'].set_value(0)
+
     def valid_value(self, value: int):
         if value not in self.procedures.keys():
             return False
@@ -52,10 +64,15 @@ class ProcedureControl:
         if self.valid_value(value):
             self.attributes['ProcedureReq'].set_value(value)
             _logger.debug('ProcedureReq set to %s' % value)
-        else:
-            self.attributes['ProcedureReq'].set_value(0)
-            if value != 0:
-                _logger.warning('ProcedureReq cannot be set to %s (out of range)' % value)
+            return
+        if self.__resetting_procedure_commands > 0:
+            self.__resetting_procedure_commands -= 1
+            return
+
+        # invalid value -> reset ProcedureReq to 0
+        self.attributes['ProcedureReq'].set_value(0)
+        if value != 0:
+            _logger.warning('ProcedureReq cannot be set to %s (out of range)' % value)
 
     def set_procedure_cur(self):
         procedure_req = self.attributes['ProcedureReq'].value
