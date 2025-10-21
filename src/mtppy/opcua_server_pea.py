@@ -5,7 +5,7 @@ from mtppy.service import Service
 from mtppy.suc_data_assembly import SUCDataAssembly, SUCActiveElement, SUCIndicatorElement, SUCOperationElement
 from mtppy.mtp_generator import MTPGenerator
 
-_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+_logger = logging.getLogger(__name__)
 
 
 class OPCUAServerPEA:
@@ -202,7 +202,7 @@ class OPCUAServerPEA:
             else:
                 self._create_opcua_element(data_assembly_set, root_folder_name)
 
-                # add SupportedRoleClass to all InternalElements
+        # add SupportedRoleClass to all InternalElements
         if self.mtp:
             self.mtp.apply_add_supported_role_class()
 
@@ -230,7 +230,7 @@ class OPCUAServerPEA:
 
     def _create_opcua_objects_for_folders(self, data_assembly: SUCDataAssembly,
                                           parent_opcua_prefix: str, parent_opcua_object: Node,
-                                          name: str = None):
+                                          name: str = None, instance=None, link_id=None):
         """
         Iterates over data assemblies to create OPC UA folders.
 
@@ -239,6 +239,8 @@ class OPCUAServerPEA:
             parent_opcua_prefix (str): Prefix to add in front of the data assembly tag.
             parent_opcua_object: Parent OPC UA node where the data assembly is added.
             name (str): Name of the data assembly. If None, the tag name of the data assembly is used.
+            instance: Instance to what the data assembly belongs.
+            link_id: ID to link the data assembly to.
         """
         if name is None:
             name = data_assembly.tag_name
@@ -250,17 +252,14 @@ class OPCUAServerPEA:
         da_type = parent_opcua_prefix.split('=')[-1].split('.')[-1]
 
         # create instance of  ServiceControl, HealthStateView, DIntServParam etc.
-        if self.mtp:
-            instance = self.mtp.create_instance(data_assembly, da_node_id)
-        else:
-            instance = None
+        if name not in self._leaves and not isinstance(data_assembly, dict):
+            if self.mtp:
+                instance = self.mtp.create_instance(data_assembly, da_node_id)
 
-        if self.mtp:
-            link_id = self.mtp.random_id_generator()
-            if da_type == 'services' or da_type in self._folders:
-                link_id = self.mtp.create_components_for_services(data_assembly, da_type)
-        else:
-            link_id = None
+            if self.mtp:
+                link_id = self.mtp.random_id_generator()
+                if da_type == 'services' or da_type in self._folders:
+                    link_id = self.mtp.create_components_for_services(data_assembly, da_type)
 
         # Add attributes of data assembly
         if hasattr(data_assembly, 'attributes'):
@@ -274,10 +273,11 @@ class OPCUAServerPEA:
             if name in self._leaves:
                 continue  # do not create folders for leaves
             folder_name = value.tag_name if hasattr(value, 'tag_name') else variable_name
-            self._create_opcua_objects_for_folders(value, da_node_id, da_node, folder_name)
+            self._create_opcua_objects_for_folders(
+                value, da_node_id, da_node, folder_name, instance, link_id)
 
         # create linked obj between instance and service component
-        if self.mtp:
+        if self.mtp and name not in self._leaves:
             self.mtp.add_linked_attr(instance, link_id)
 
     def _create_opcua_objects_for_leaves(self, opcua_object: SUCDataAssembly, parent_opcua_prefix: str, parent_opcua_object: Node, par_instance):
