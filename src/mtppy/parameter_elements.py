@@ -4,7 +4,7 @@ from mtppy.attribute import Attribute
 from mtppy.operation_source_mode import OperationSourceMode
 from mtppy.suc_data_assembly import SUCParameterElement
 
-_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+_logger = logging.getLogger(__name__)
 
 
 class AnaServParam(SUCParameterElement):

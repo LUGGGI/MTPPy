@@ -4,7 +4,7 @@ from collections.abc import Callable
 from typing import Any
 
 
-_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+_logger = logging.getLogger(__name__)
 
 
 class Attribute:

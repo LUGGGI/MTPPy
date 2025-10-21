@@ -4,13 +4,13 @@ from collections.abc import Callable
 
 from mtppy.attribute import Attribute
 
-from mtppy.operation_source_mode import OperationSourceModeElement, OperationMode
+from mtppy.operation_source_mode import OperationSourceModeElement, OperationMode, OperationSourceMode
 from mtppy.suc_data_assembly import SUCActiveElement
 
 from time import sleep
 from simple_pid import PID
 
-_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+_logger = logging.getLogger(__name__)
 
 
 class Locks():
@@ -1941,7 +1941,7 @@ class PIDCtrl(SUCActiveElement):
                  P=100, Ti=10, Td=1):
         super().__init__(tag_name, tag_description)
 
-        self.op_src_mode = OperationSourceModeElement()
+        self.op_src_mode = OperationSourceMode()
 
         self.pv_scl_min = pv_scl_min
         self.pv_scl_max = pv_scl_max

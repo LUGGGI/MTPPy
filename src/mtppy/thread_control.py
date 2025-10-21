@@ -2,7 +2,7 @@ import logging
 from threading import Thread, Event, current_thread
 from collections.abc import Callable
 
-_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+_logger = logging.getLogger(__name__)
 
 
 class StoppableThread(Thread):

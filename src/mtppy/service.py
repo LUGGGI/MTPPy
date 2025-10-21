@@ -13,7 +13,7 @@ from mtppy.procedure_control import ProcedureControl
 from mtppy.procedure import Procedure
 from mtppy.suc_data_assembly import SUCParameterElement
 
-_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+_logger = logging.getLogger(__name__)
 
 
 class Service(SUCServiceControl):

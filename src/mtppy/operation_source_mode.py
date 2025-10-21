@@ -2,7 +2,7 @@ import logging
 
 from mtppy.attribute import Attribute
 
-_logger = logging.getLogger(f"mtp.{__name__.split('.')[-1]}")
+_logger = logging.getLogger(__name__)
 
 
 class OperationSourceMode:
