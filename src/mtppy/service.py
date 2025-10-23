@@ -6,7 +6,7 @@ from collections.abc import Callable
 from abc import abstractmethod
 
 from mtppy.suc_data_assembly import SUCServiceControl
-from mtppy.thread_control import ThreadControl
+from mtppy.thread_control import ThreadControl, StoppableThread
 from mtppy.operation_source_mode import OperationSourceMode
 from mtppy.state_machine import StateMachine
 from mtppy.procedure_control import ProcedureControl
@@ -177,6 +177,10 @@ class Service(SUCServiceControl):
             bool: True if the current state matches, False otherwise.
         """
         if state_str is self.state_machine.get_current_state_str():
+            # handel the case where there are multiple threads for the same state are running
+            # (e.g. execute state after restart)
+            if self.get_state_stop_event().is_set():
+                return False
             return True
         else:
             # start the next thread if the state is not the current one
@@ -190,10 +194,11 @@ class Service(SUCServiceControl):
         Returns:
             Event: Event that is set when the state should stop.
         """
-        if self.thread_ctrl.thread is None:
-            raise RuntimeError("Thread is not running.")
+        current_thread = self.thread_ctrl.get_current_thread()
+        if not isinstance(current_thread, StoppableThread):
+            raise RuntimeError("Current thread is not a state thread. No stop event available.")
 
-        return self.thread_ctrl.thread.stop_event
+        return current_thread.stop_event
 
     def _init_idle_state(self):
         """
@@ -250,7 +255,7 @@ class Service(SUCServiceControl):
         """
         _logger.debug(f"{self.tag_name} - Idle -")
         cycle = 0
-        while self.is_state("idle") and not self.thread_ctrl.thread.stop_event.is_set():
+        while self.is_state("idle"):
             _logger.debug(f"{self.tag_name} - Idle cycle {cycle}")
             cycle += 1
             time.sleep(3)

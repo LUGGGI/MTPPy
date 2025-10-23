@@ -32,7 +32,7 @@ class ThreadControl:
         """
         self.service_name = service_name
         self.state_change_function = state_change_function
-        self.thread: StoppableThread = None
+        self.current_thread: StoppableThread = None
         self.running_state = ''
         self.requested_state = ''
         self.callback_function: Callable = None
@@ -56,14 +56,15 @@ class ThreadControl:
         """
         if (self.requested_state is not self.running_state
                 or (self.running_state == "idle" and
-                    (self.thread is None or not self.thread.is_alive()))):
+                    (self.current_thread is None or not self.current_thread.is_alive()))):
             _logger.debug(f'Reallocate thread to state {self.requested_state}')
             self.stop_thread(stop_if_current_thread=False)
 
-            self.thread = StoppableThread(target=self.run_thread, args=(self.callback_function,),
-                                          name=f"{self.service_name}_{self.requested_state}")
+            new_thread_name = f"{self.service_name}_{self.requested_state}"
+            self.current_thread = StoppableThread(target=self.run_thread, args=(self.callback_function,),
+                                                  name=new_thread_name)
             self.running_state = self.requested_state
-            self.thread.start()
+            self.current_thread.start()
 
     def run_thread(self, target_function: Callable):
         """
@@ -75,8 +76,13 @@ class ThreadControl:
         try:
             try:
                 target_function()
+                _logger.debug(f"State {current_thread().name} ended")
                 # changes state for transitional states, only if the state is the current state.
                 if self.running_state is target_function.__name__:
+                    # check if the running state actually corresponds the the current state
+                    if current_thread() is not self.current_thread:
+                        _logger.debug(f"Ending of old thread, not changing state")
+                        return
                     if self.state_change_function:
                         self.state_change_function()
             # Catch InterruptedError thrown by stop events. Should not cause an error.
@@ -85,7 +91,7 @@ class ThreadControl:
 
         except Exception as e:
             self.exception_callback(e) if self.exception_callback else _logger.error(
-                f"Exception in thread {self.thread.name}: {e}", exc_info=True)
+                f"Exception in thread {self.current_thread.name}: {e}", exc_info=True)
 
     def stop_thread(self, stop_if_current_thread: bool = True):
         """
@@ -94,7 +100,16 @@ class ThreadControl:
         Args:
             stop_if_current_thread (bool): If True, stops the thread also if it is the current thread.   
         """
-        if self.thread and self.thread.is_alive():
-            if stop_if_current_thread or self.thread is not current_thread():
-                _logger.debug(f'Stopping thread {self.thread.name}')
-                self.thread.stop()
+        if self.current_thread and self.current_thread.is_alive():
+            if stop_if_current_thread or self.current_thread is not current_thread():
+                _logger.debug(f'Stopping thread {self.current_thread.name}')
+                self.current_thread.stop()
+
+    def get_current_thread(self) -> StoppableThread:
+        """
+        Gets the thread object of the thread where this method is called.
+
+        Returns:
+            StoppableThread: The current thread object.
+        """
+        return current_thread()
