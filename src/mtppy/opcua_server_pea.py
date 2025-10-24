@@ -21,7 +21,7 @@ class OPCUAServerPEA:
         self.active_elements: dict[str, SUCActiveElement] = {}
         self.indicator_elements: dict[str, SUCIndicatorElement] = {}
         self.operation_elements: dict[str, SUCOperationElement] = {}
-        self.custom_data_assembly_sets: dict[str, dict[str, SUCDataAssembly]] = {}
+        self.custom_data_assembly_set: dict[str, SUCDataAssembly] = {}
         self.endpoint: str = endpoint
         self.opcua_server: Server = None
         self.opcua_ns: int = 3
@@ -76,29 +76,39 @@ class OPCUAServerPEA:
         """
         self.operation_elements[operation_element.tag_name] = operation_element
 
-    def add_custom_data_assembly_set(self, root_folder_name: str, data_assembly_set: dict[str, SUCDataAssembly]):
+    def add_custom_data_assembly(self, data_assembly: SUCDataAssembly, folder_name: str = ''):
         """
         Add a custom data assembly to the PEA.
 
         Args:
-            root_folder_name (str): Root folder name for the custom data assembly.
-            data_assembly (dict[str, SUCDataAssembly]): Custom data assembly instance.
-                Has to be a dictionary with folder names as keys and SUCDataAssembly instances as values.
-                If name is '', the data assembly is added to the root of the PEA.
+            data_assembly (SUCDataAssembly): Custom data assembly instance.
+                Has to be a class derived from SUCDataAssembly.
+            folder_name (str): Folder to add the data assembly to.
+                If name is '', the data assembly is added to the root of the Server.
         """
 
-        if root_folder_name in self.custom_data_assembly_sets:
-            raise ValueError(f"Data assembly with tag name '{root_folder_name}' already exists.")
-        if not isinstance(data_assembly_set, dict) or data_assembly_set.__len__() == 0:
-            raise ValueError("Data assembly set must be a non-empty dictionary.")
-        if not isinstance(next(iter(data_assembly_set)), str):
-            raise TypeError("Data assembly set keys must be strings.")
-        if not isinstance(next(iter(data_assembly_set.values())), SUCDataAssembly):
-            raise TypeError("Data assembly set values must be instances of SUCDataAssembly.")
+        if not isinstance(data_assembly, SUCDataAssembly):
+            raise TypeError('data_assembly must be derived from type SUCDataAssembly')
 
-        root_folder_name = (next(iter(data_assembly_set)) if root_folder_name == ''
-                            else root_folder_name)
-        self.custom_data_assembly_sets[root_folder_name] = data_assembly_set
+        if folder_name == '':
+            if data_assembly.tag_name in self.custom_data_assembly_set:
+                raise ValueError(
+                    f'Custom data assembly set with name {data_assembly.tag_name} '
+                    f'in the root folder already exists.')
+            self.custom_data_assembly_set[data_assembly.tag_name] = data_assembly
+            return
+
+        # create an empty data assembly as folder
+        if folder_name not in self.custom_data_assembly_set:
+            self.custom_data_assembly_set[folder_name] = SUCDataAssembly(folder_name)
+
+        # add data assembly as attribute to the empty data assembly that is used as a folder
+        da_folder = self.custom_data_assembly_set[folder_name]
+        if hasattr(da_folder, data_assembly.tag_name):
+            raise ValueError(
+                f'Custom data assembly with name {data_assembly.tag_name} '
+                f'in folder {folder_name} already exists.')
+        setattr(da_folder, data_assembly.tag_name, data_assembly)
 
     def add_folders(self, folders: list[str]):
         """
@@ -191,16 +201,8 @@ class OPCUAServerPEA:
             self._create_opcua_element(self.operation_elements, "operation_elements")
 
         # add custom data assemblies
-        for root_folder_name, data_assembly_set in self.custom_data_assembly_sets.items():
-            _logger.info(f'- custom data assembly {root_folder_name}')
-            # if root_folder_name is the same as the first key add to root
-            if root_folder_name == next(iter(data_assembly_set)):
-                ns = self.opcua_ns
-                server = self.opcua_server.get_objects_node()
-                self._create_opcua_objects_for_folders(
-                    data_assembly_set[root_folder_name], f"ns={ns};s={root_folder_name}", server, root_folder_name)
-            else:
-                self._create_opcua_element(data_assembly_set, root_folder_name)
+        if self.custom_data_assembly_set.__len__() > 0:
+            self._create_opcua_element(self.custom_data_assembly_set, "")
 
         # add SupportedRoleClass to all InternalElements
         if self.mtp:
@@ -217,12 +219,16 @@ class OPCUAServerPEA:
 
         Args:
             elements (dict[str, SUCDataAssembly]): Dictionary of elements.
-            folder_name (str): Name of the folder to create in the OPC UA server.
+            folder_name (str): Name of the folder to create in the OPC UA server.  
+                If folder_name is '', the elements are added to the root of the Server.
         """
         ns = self.opcua_ns
-        server = self.opcua_server.get_objects_node()
+        root_node = self.opcua_server.get_objects_node()
         element_node_id = f'ns={ns};s={folder_name}'
-        element_node = server.add_folder(element_node_id, folder_name)
+        if folder_name != '':
+            element_node = root_node.add_folder(element_node_id, folder_name)
+        else:
+            element_node = root_node
         _logger.info(f'- {folder_name}')
         for element in elements.values():
             _logger.info(f'-- element {element.tag_name}')
@@ -244,7 +250,7 @@ class OPCUAServerPEA:
         """
         if name is None:
             name = data_assembly.tag_name
-        da_node_id = f'{parent_opcua_prefix}.{name}'
+        da_node_id = f'{parent_opcua_prefix}{"." if parent_opcua_prefix != "" else ""}{name}'
         da_node = parent_opcua_object.add_folder(da_node_id, name)
         _logger.debug(f'OPCUA Folder: {da_node_id}, Name: {name}')
 
