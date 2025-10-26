@@ -160,6 +160,7 @@ class StateMachine:
             self._change_state_to(StateCodes.aborted)
 
     def _change_state_to(self, new_state: int):
+        self.prev_state = self.act_state
         self.act_state = new_state
         self.attributes['StateCur'].set_value(new_state)
         new_state_str = StateCodes.int_code[new_state]
@@ -182,6 +183,15 @@ class StateMachine:
             str: Current state as a string.
         """
         return StateCodes.int_code[self.act_state]
+
+    def get_prev_state_str(self) -> str:
+        """
+        Get the previous state as a string.
+
+        Returns:
+            str: Previous state as a string.
+        """
+        return StateCodes.int_code[self.prev_state]
 
     def disable_commands_if_no_procedure(self, value: int):
         """

@@ -265,7 +265,6 @@ class Service(SUCServiceControl):
         """
         Starting state.
         """
-        self._state_change()
 
     @abstractmethod
     def execute(self):
