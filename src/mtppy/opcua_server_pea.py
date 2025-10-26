@@ -250,7 +250,12 @@ class OPCUAServerPEA:
         """
         if name is None:
             name = data_assembly.tag_name
-        da_node_id = f'{parent_opcua_prefix}{"." if parent_opcua_prefix != "" else ""}{name}'
+        da_node_id = parent_opcua_prefix
+        if parent_opcua_prefix != f'ns={self.opcua_ns};s=':
+            # node not added to root folder
+            da_node_id += '.'
+        da_node_id += name
+
         da_node = parent_opcua_object.add_folder(da_node_id, name)
         _logger.debug(f'OPCUA Folder: {da_node_id}, Name: {name}')
 
